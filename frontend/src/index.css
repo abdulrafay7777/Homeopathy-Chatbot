@@ -1,15 +1,84 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-gemini-bg: #eff6ff;
+  --color-gemini-surface: #ffffff;
+  --color-gemini-surface-2: #edf2ff;
+  --color-gemini-surface-hover: #e5eefb;
+  --color-gemini-border: rgba(15, 23, 42, 0.12);
+  --color-gemini-text: #0f172a;
+  --color-gemini-text-muted: #475569;
+  --color-gemini-accent: #8b5cf6;
+  --color-gemini-accent-2: #38bdf8;
+  --color-gemini-accent-3: #fb7185;
+  
+  /* Expose colors to Tailwind utilities */
+  --color-bg: var(--color-gemini-bg);
+  --color-surface: var(--color-gemini-surface);
+  --color-surface-2: var(--color-gemini-surface-2);
+  --color-surface-hover: var(--color-gemini-surface-hover);
+  --color-border: var(--color-gemini-border);
+  --color-text: var(--color-gemini-text);
+  --color-text-muted: var(--color-gemini-text-muted);
+  --color-accent: var(--color-gemini-accent);
+  --color-accent-2: var(--color-gemini-accent-2);
+  --color-accent-3: var(--color-gemini-accent-3);
+}
+
+:root {
+  --app-bg-top: #eff6ff;
+  --app-bg-mid: #f8fbff;
+  --app-bg-bottom: #ffffff;
+}
+
+/* Dark mode - using .dark class for manual theme switching */
+.dark {
+  --color-gemini-bg: #0b1220;
+  --color-gemini-surface: #111827;
+  --color-gemini-surface-2: #182235;
+  --color-gemini-surface-hover: #1f2937;
+  --color-gemini-border: rgba(148, 163, 184, 0.16);
+  --color-gemini-text: #eff6ff;
+  --color-gemini-text-muted: #cbd5e1;
+  --app-bg-top: #09111f;
+  --app-bg-mid: #111827;
+  --app-bg-bottom: #172033;
+}
 
 * {
   margin: 0;
-  padding: 0;
+  /* padding: 0; */
   box-sizing: border-box;
 }
 
+textarea {
+  padding: 0.5rem 0.9rem 0.5rem 1rem !important;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: #F8F9FA;
-  color: #1E293B;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(139, 92, 246, 0.12), transparent 28%),
+    radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 20%),
+    linear-gradient(180deg, var(--app-bg-top) 0%, var(--app-bg-mid) 45%, var(--app-bg-bottom) 100%);
+  color: var(--color-gemini-text);
+}
+
+/* Ensure all text elements inherit color properly */
+p, span, div, h1, h2, h3, h4, h5, h6, li, strong, em, b, i {
+  color: inherit;
+}
+
+#root {
+  min-height: 100vh;
+  color: var(--color-gemini-text);
 }
 
 /* Blue Gradient Background */
