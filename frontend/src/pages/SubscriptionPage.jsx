@@ -21,7 +21,7 @@ const SubscriptionPage = () => {
         'Email support',
         'Basic templates',
       ],
-      buttonText: 'Edit plan',
+      buttonText: 'Select plan',
       popular: false,
     },
     {
@@ -40,7 +40,7 @@ const SubscriptionPage = () => {
         'Custom responses',
         'Analytics dashboard',
       ],
-      buttonText: 'Edit plan',
+      buttonText: 'Select plan',
       popular: true,
     },
     {
@@ -61,7 +61,7 @@ const SubscriptionPage = () => {
         'API access',
         'White-label options',
       ],
-      buttonText: 'Edit plan',
+      buttonText: 'Select plan',
       popular: false,
     },
   ];

@@ -7,7 +7,10 @@ import ThemeToggle from './components/common/ThemeToggle';
 import ProfilePage from './pages/ProfilePage';
 import SubscriptionPage from './pages/SubscriptionPage';
 import AdminDashboard from './pages/AdminDashboard';
-
+import DashboardPage from './pages/DashboardPage';
+import HistoryPage from './pages/HistoryPage';
+import KnowledgeBasePage from './pages/KnowledgeBasePage';
+import HelpSupportPage from './pages/HelpSupportPage';
 function App() {
   const { isAuthenticated } = useAuth();
 
@@ -22,7 +25,17 @@ function App() {
         {/* Protected Routes */}
         <Route 
           path="/"
+          element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />} 
+        />
+        
+        <Route 
+          path="/consultation"
           element={isAuthenticated ? <ChatPage /> : <Navigate to="/login" />} 
+        />
+        
+        <Route 
+          path="/history"
+          element={isAuthenticated ? <HistoryPage /> : <Navigate to="/login" />} 
         />
         
         <Route 
@@ -38,6 +51,16 @@ function App() {
         <Route 
           path="/admin" 
           element={isAuthenticated ? <AdminDashboard /> : <Navigate to="/login" />} 
+        />
+
+        <Route 
+          path="/knowledge" 
+          element={isAuthenticated ? <KnowledgeBasePage /> : <Navigate to="/login" />} 
+        />
+
+        <Route 
+          path="/support" 
+          element={isAuthenticated ? <HelpSupportPage /> : <Navigate to="/login" />} 
         />
 
         {/* Catch-all for 404 */}

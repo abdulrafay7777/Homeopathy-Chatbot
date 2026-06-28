@@ -1,0 +1,94 @@
+import { useNavigate } from 'react-router-dom';
+import { Stethoscope, History, CreditCard, BookOpen, Settings, HelpCircle } from 'lucide-react';
+import ChatHeader from '../components/chat/ChatHeader';
+
+const DashboardPage = () => {
+  const navigate = useNavigate();
+
+  const menuItems = [
+    {
+      title: 'New Consultation',
+      description: 'Start a new homeopathic case taking',
+      icon: Stethoscope,
+      path: '/consultation',
+      color: 'from-blue-500 to-cyan-400'
+    },
+    {
+      title: 'Patients History',
+      description: 'View previous consultations and patient records',
+      icon: History,
+      path: '/history',
+      color: 'from-purple-500 to-pink-500'
+    },
+    {
+      title: 'Plans & Pricing',
+      description: 'Manage your subscription and billing details',
+      icon: CreditCard,
+      path: '/subscription',
+      color: 'from-amber-500 to-orange-400'
+    },
+    {
+      title: 'Knowledge Base',
+      description: 'Explore homeopathic remedies and materia medica',
+      icon: BookOpen,
+      path: '/knowledge',
+      color: 'from-emerald-500 to-teal-400'
+    },
+    {
+      title: 'Settings',
+      description: 'Configure your profile and application preferences',
+      icon: Settings,
+      path: '/profile',
+      color: 'from-gray-500 to-slate-400'
+    },
+    {
+      title: 'Help & Support',
+      description: 'Get assistance and contact our support team',
+      icon: HelpCircle,
+      path: '/support',
+      color: 'from-indigo-500 to-blue-500'
+    }
+  ];
+
+  return (
+    <div className="flex flex-col h-screen w-full overflow-hidden" style={{ backgroundColor: 'var(--color-gemini-bg)', color: 'var(--color-gemini-text)' }}>
+      <ChatHeader />
+      
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex items-center justify-center">
+        <div className="w-full max-w-6xl mx-auto">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {menuItems.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <div 
+                  key={index}
+                  onClick={() => navigate(item.path)}
+                  className="group relative p-6 rounded-3xl cursor-pointer transition-all duration-300 hover:scale-[1.02] border"
+                  style={{ 
+                    backgroundColor: 'var(--color-gemini-surface)',
+                    borderColor: 'var(--color-gemini-border)'
+                  }}
+                >
+                  <div className={`w-12 h-12 rounded-2xl mb-4 flex items-center justify-center bg-gradient-to-br ${item.color} text-white shadow-lg`}>
+                    <Icon size={24} />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                  <p className="text-sm" style={{ color: 'var(--color-gemini-text-muted)' }}>
+                    {item.description}
+                  </p>
+                  
+                  {/* Subtle hover effect border */}
+                  <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none border-2" 
+                       style={{ borderColor: 'var(--color-gemini-accent)' }} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DashboardPage;

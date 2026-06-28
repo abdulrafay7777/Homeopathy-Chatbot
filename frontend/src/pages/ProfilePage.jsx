@@ -254,62 +254,7 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Security Card */}
-        <div style={{
-          backgroundColor: 'var(--color-gemini-surface)',
-          border: '1px solid var(--color-gemini-border)',
-          borderRadius: '24px',
-          padding: '2rem',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-        }}>
-          <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '1.5rem', color: 'var(--color-gemini-text)' }}>
-            Security Settings
-          </h3>
-          
-          <button
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              width: '100%',
-              gap: '1rem',
-              padding: '1rem',
-              backgroundColor: 'var(--color-gemini-surface-2)',
-              border: '1px solid var(--color-gemini-border)',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-gemini-surface-hover)';
-              e.currentTarget.style.borderColor = 'var(--color-gemini-accent)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-gemini-surface-2)';
-              e.currentTarget.style.borderColor = 'var(--color-gemini-border)';
-            }}
-          >
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
-              backgroundColor: 'var(--color-gemini-surface)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Key size={20} style={{ color: 'var(--color-gemini-accent)' }} />
-            </div>
-            <div style={{ flex: 1, textAlign: 'left' }}>
-              <p style={{ fontSize: '16px', fontWeight: '600', color: 'var(--color-gemini-text)', marginBottom: '0.25rem' }}>
-                Change Password
-              </p>
-              <p style={{ fontSize: '14px', color: 'var(--color-gemini-text-muted)' }}>
-                Update your password to keep your account secure
-              </p>
-            </div>
-            <ArrowLeft size={20} style={{ transform: 'rotate(180deg)', color: 'var(--color-gemini-text-muted)' }} />
-          </button>
-        </div>
+
       </div>
     </div>
   );

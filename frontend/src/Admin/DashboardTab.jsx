@@ -1,32 +1,54 @@
-import { Users, MessageSquare, CreditCard } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, MessageSquare, CreditCard, Activity } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { apiClient } from '../services/api';
 
 const DashboardTab = () => {
-  const stats = [
-    {
-      title: 'Total Users',
-      value: '2,543',
-      icon: Users,
-      color: '#8b5cf6'
-    },
-    {
-      title: 'Active Chats',
-      value: '1,234',
-      icon: MessageSquare,
-      color: '#38bdf8'
-    },
-    {
-      title: 'Subscriptions',
-      value: '892',
-      icon: CreditCard,
-      color: '#fb7185'
-    }
-  ];
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  const [stats, setStats] = useState([
+    { title: 'Total Users', value: '0', icon: Users, color: '#8b5cf6' },
+    { title: 'Active Chats', value: '0', icon: MessageSquare, color: '#38bdf8' },
+    { title: 'Subscriptions', value: '0', icon: CreditCard, color: '#fb7185' }
+  ]);
+  
+  const [recentUsers, setRecentUsers] = useState([]);
+  const [graphData, setGraphData] = useState([]);
 
-  const recentUsers = [
-    { id: 1, name: 'Dr. AbdulRafay', email: 'abdul@example.com', role: 'Doctor', date: '2 hours ago' },
-    { id: 2, name: 'Ali Khan', email: 'ali@example.com', role: 'Student', date: '5 hours ago' },
-    { id: 3, name: 'Abdullah', email: 'abdullah@example.com', role: 'Student', date: '1 day ago' },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.get('/admin/dashboard-stats');
+        const data = response.data;
+        
+        setStats([
+          { title: 'Total Users', value: data.stats.totalUsers.toString(), icon: Users, color: '#8b5cf6' },
+          { title: 'Total Consultations', value: data.stats.activeChats.toString(), icon: Activity, color: '#38bdf8' },
+          { title: 'Subscriptions', value: data.stats.subscriptions.toString(), icon: CreditCard, color: '#fb7185' }
+        ]);
+        
+        setRecentUsers(data.recentUsers);
+        setGraphData(data.graphData);
+      } catch (err) {
+        setError(err.message || "Failed to load dashboard data");
+        console.error("Error fetching admin stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-full p-12 text-lg opacity-70">Loading dashboard metrics...</div>;
+  }
+
+  if (error) {
+    return <div className="flex items-center justify-center h-full p-12 text-red-500">Error: {error}</div>;
+  }
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto', padding: window.innerWidth < 640 ? '0' : 'initial' }}>
@@ -177,7 +199,63 @@ const DashboardTab = () => {
               </div>
             </div>
           ))}
+          
+          {recentUsers.length === 0 && (
+            <p className="opacity-60 p-4 text-center">No recent users found.</p>
+          )}
         </div>
+      </div>
+
+      {/* AI Consultation Graph */}
+      <div style={{
+        backgroundColor: 'var(--color-gemini-surface)',
+        border: '1px solid var(--color-gemini-border)',
+        borderRadius: '16px',
+        padding: '1.5rem',
+        marginTop: '2rem',
+        height: '400px'
+      }}>
+        <h3 style={{
+          fontSize: '18px',
+          fontWeight: '700',
+          color: 'var(--color-gemini-text)',
+          marginBottom: '1.5rem'
+        }}>
+          Consultations per Patient
+        </h3>
+        
+        {graphData.length > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={graphData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+              <XAxis 
+                dataKey="patientName" 
+                tick={{ fill: 'var(--color-gemini-text-muted)' }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
+              <YAxis tick={{ fill: 'var(--color-gemini-text-muted)' }} allowDecimals={false} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'var(--color-gemini-surface-2)', 
+                  borderColor: 'var(--color-gemini-border)',
+                  color: 'var(--color-gemini-text)',
+                  borderRadius: '8px'
+                }} 
+              />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              <Bar dataKey="consultations" name="Total Consultations" fill="#38bdf8" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="flex items-center justify-center h-full opacity-60">
+            No consultation data available yet.
+          </div>
+        )}
       </div>
     </div>
   );
