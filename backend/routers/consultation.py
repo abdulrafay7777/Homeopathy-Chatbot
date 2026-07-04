@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, Field
 from typing import List
@@ -13,6 +13,7 @@ from api_schemas import (
 )
 from core.config import llm
 from core.prompts import CONSULTATION_SYSTEM_PROMPT
+from core.dependencies import get_current_user
 from utils.helpers import get_pkt_now, build_consultation_prompt
 from utils.exceptions import handle_llm_error
 from disease_questions import get_common_diseases, get_disease_label
@@ -61,10 +62,10 @@ async def follow_up_questions(request: FollowUpQuestionsRequest):
 
     if llm:
         try:
-            system_prompt = f"You are a homeopathic expert. The patient has reported: '{context_str}'. Generate exactly 4 highly relevant multiple-choice follow-up questions in Roman Urdu to ask the patient for an accurate homeopathic diagnosis. Ensure each question targets a specific symptom modality, sensation, or related condition."
+            system_prompt = f"You are a homeopathic expert. The patient has reported: '{context_str}'. Generate exactly 4 highly relevant multiple-choice follow-up questions ONLY in Roman Urdu (no Hindi script, no English translations, no Arabic script Urdu) to ask the patient for an accurate homeopathic diagnosis. Ensure each question targets a specific symptom modality, sensation, or related condition."
             messages = [
                 SystemMessage(content=system_prompt),
-                HumanMessage(content="Generate the follow-up questions based on the schema.")
+                HumanMessage(content="Generate the follow-up questions based on the schema. CRITICAL: Output ONLY the raw tool call. Do NOT output any conversational text, preamble, or markdown blocks.")
             ]
             structured_llm = llm.with_structured_output(GeneratedQuestionsData)
             result = await structured_llm.ainvoke(messages)
@@ -84,7 +85,7 @@ async def follow_up_questions(request: FollowUpQuestionsRequest):
 
 
 @router.post("/api/consultation", response_model=ChatResponse)
-async def consultation(request: ConsultationRequest):
+async def consultation(request: ConsultationRequest, current_user: dict = Depends(get_current_user)):
     """Generate homeopathic recommendation from patient profile and symptoms."""
     if llm is None:
         raise HTTPException(
@@ -93,12 +94,13 @@ async def consultation(request: ConsultationRequest):
         )
 
     try:
+        request.patient.name = current_user.get("name", "Unknown")
+        
         messages = [
             SystemMessage(content=CONSULTATION_SYSTEM_PROMPT),
             HumanMessage(content=build_consultation_prompt(request.patient)),
         ]
         
-        # Use LangChain's structured output
         structured_llm = llm.with_structured_output(ConsultationData)
         result = await structured_llm.ainvoke(messages)
         
@@ -106,7 +108,7 @@ async def consultation(request: ConsultationRequest):
         try:
             patient_dict = request.patient.model_dump()
             ai_dict = result.model_dump()
-            await save_consultation(patient_dict, ai_dict)
+            await save_consultation(patient_dict, ai_dict, user_id=int(current_user["sub"]))
         except Exception as db_err:
             print(f"Failed to save consultation to DB: {db_err}")
         
@@ -121,9 +123,9 @@ async def consultation(request: ConsultationRequest):
         return handle_llm_error(e)
 
 @router.get("/api/consultations")
-async def fetch_consultations():
+async def fetch_consultations(current_user: dict = Depends(get_current_user)):
     """Retrieve patient consultation history from the database."""
-    consultations = await get_all_consultations()
+    consultations = await get_all_consultations(user_id=int(current_user["sub"]), role=current_user.get("role"))
     return {
         "success": True,
         "data": consultations,

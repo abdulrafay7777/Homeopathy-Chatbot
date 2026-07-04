@@ -1,6 +1,7 @@
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Download } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import { useChat } from '../../context/ChatContext';
+import html2pdf from 'html2pdf.js';
 
 const ConsultationResult = () => {
   const { patientData, followUpAnswers, result, resetConsultation } = useChat();
@@ -14,15 +15,35 @@ const ConsultationResult = () => {
 
   const followUpList = Object.values(followUpAnswers);
 
+  const handleDownloadPdf = () => {
+    const element = document.getElementById('pdf-content');
+
+    const opt = {
+      margin:       0.5,
+      filename:     `${patientData.name || 'Patient'}_Prescription.pdf`,
+      image:        { type: 'jpeg', quality: 1.0 },
+      html2canvas:  { 
+        scale: 2, 
+        useCORS: true, 
+        scrollY: 0,
+        backgroundColor: '#ffffff' // Force white background to prevent blank/black issues
+      },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
+  };
+
   return (
     <div className="w-full max-w-3xl mx-auto flex flex-col gap-6">
-      <div
-        className="rounded-2xl p-5 grid grid-cols-2 sm:grid-cols-4 gap-4"
-        style={{
-          backgroundColor: 'var(--color-gemini-surface)',
-          border: '1px solid var(--color-gemini-border)',
-        }}
-      >
+      <div id="pdf-content" className="flex flex-col gap-6 p-6" style={{ backgroundColor: 'var(--color-gemini-bg)' }}>
+        <div
+          className="rounded-2xl p-5 grid grid-cols-2 sm:grid-cols-4 gap-4"
+          style={{
+            backgroundColor: 'var(--color-gemini-surface)',
+            border: '1px solid var(--color-gemini-border)',
+          }}
+        >
         {summaryItems.map(({ label, value }) => (
           <div key={label}>
             <p className="text-xs font-medium mb-1" style={{ color: 'var(--color-gemini-text-muted)' }}>
@@ -101,7 +122,9 @@ const ConsultationResult = () => {
                       borderLeft: `4px solid ${borderColor}`,
                     }}
                   >
-                    <h3 className="text-lg font-bold mb-3" style={{ color: borderColor }}>{med.name}</h3>
+                    <h3 className="text-lg font-bold mb-3" style={{ color: borderColor }}>
+                      {med.name} {med.match_percentage ? `(${med.match_percentage}%)` : ''}
+                    </h3>
                     
                     <div className="mb-4 space-y-1 p-3 rounded-lg" style={{ backgroundColor: 'var(--color-gemini-bg)' }}>
                       <p className="text-xs font-semibold" style={{ color: 'var(--color-gemini-text)' }}>
@@ -132,30 +155,33 @@ const ConsultationResult = () => {
             </div>
           )}
 
-          {result.advice && (
+          {result.recommended_tests && result.recommended_tests.length > 0 && (
             <div className="p-5 rounded-2xl" style={{ backgroundColor: 'var(--color-gemini-surface-2)', border: '1px solid var(--color-gemini-border)' }}>
-              <h4 className="text-[13px] font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--color-gemini-text-muted)' }}>Advice & Precautions</h4>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--color-gemini-text)' }}>
-                {result.advice}
-              </p>
+              <h4 className="text-[13px] font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--color-gemini-text-muted)' }}>Recommended Tests</h4>
+              <ul className="list-disc pl-5 text-sm leading-relaxed" style={{ color: 'var(--color-gemini-text)' }}>
+                {result.recommended_tests.map((test, i) => (
+                  <li key={i}>{test}</li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
       )}
+      </div>
 
-      <div className="flex justify-center pb-8">
+      <div className="flex justify-center gap-4 pb-8">
         <button
           type="button"
-          onClick={resetConsultation}
+          onClick={handleDownloadPdf}
           className="flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-all duration-200 cursor-pointer hover:scale-[1.02]"
           style={{
-            backgroundColor: 'var(--color-gemini-surface-2)',
-            border: '1px solid var(--color-gemini-border)',
-            color: 'var(--color-gemini-text)',
+            backgroundColor: '#1a73e8',
+            color: 'white',
+            border: 'none',
           }}
         >
-          <RotateCcw size={16} />
-          New Consultation
+          <Download size={16} />
+          Download PDF
         </button>
       </div>
     </div>

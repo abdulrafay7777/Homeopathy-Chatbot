@@ -26,6 +26,12 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# Initialize database
+from db.database import engine, Base
+import models.patient
+import models.admin_person
+Base.metadata.create_all(bind=engine)
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
@@ -40,6 +46,8 @@ app.include_router(health_router)
 app.include_router(consultation_router)
 app.include_router(chat_router)
 app.include_router(admin_router)
+from routers.auth import router as auth_router
+app.include_router(auth_router)
 
 if __name__ == "__main__":
     import uvicorn

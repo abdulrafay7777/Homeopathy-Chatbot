@@ -26,6 +26,7 @@ class ConsultationHistoryDB(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey("patients.id"))
+    admin_person_id = Column(Integer, ForeignKey("admin_person.id"), nullable=True)
     symptoms = Column(Text, nullable=False)
     disease = Column(String(100), nullable=True)
     

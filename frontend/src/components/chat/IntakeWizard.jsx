@@ -7,13 +7,6 @@ export const CUSTOM_MCQ_OPTION = 'In mein se koi nahi — apna jawab likhen';
 
 const BASE_STEPS = [
   {
-    key: 'name',
-    type: 'text',
-    title: 'Patient ka naam?',
-    subtitle: 'Pehla sawal — marez ka naam likhen',
-    placeholder: 'Naam likhen...',
-  },
-  {
     key: 'age',
     type: 'mcq',
     title: 'Umar kya hai?',

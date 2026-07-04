@@ -1,15 +1,39 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter } from 'lucide-react';
+import { apiClient } from '../services/api';
+import toast from 'react-hot-toast';
 
 const AllUsersTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [users, setUsers] = useState([
-    { id: 1, name: 'Dr. AbdulRafay', email: 'abdul@example.com', role: 'doctor', plan: 'Premium', status: 'active', joinDate: '2024-01-15' },
-    { id: 2, name: 'Ali Khan', email: 'ali@example.com', role: 'student', plan: 'Basic', status: 'active', joinDate: '2024-02-20' },
-    { id: 3, name: 'Abdullah', email: 'abdullah@example.com', role: 'student', plan: 'Standard', status: 'active', joinDate: '2024-01-28' },
-  ]);
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await apiClient.get('/admin/users');
+        // Map the backend data to match the frontend expectations
+        const fetchedUsers = response.data.map(user => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          plan: user.plan,
+          status: 'active', // Defaulting to active since we don't have status in DB yet
+          joinDate: user.created_at
+        }));
+        setUsers(fetchedUsers);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        toast.error('Failed to load users');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -220,8 +244,19 @@ const AllUsersTab = () => {
           </table>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div style={{
+            padding: '3rem',
+            textAlign: 'center',
+            color: 'var(--color-gemini-text-muted)'
+          }}>
+            <p style={{ fontSize: '15px', margin: 0 }}>Loading users...</p>
+          </div>
+        )}
+
         {/* No Results */}
-        {filteredUsers.length === 0 && (
+        {!loading && filteredUsers.length === 0 && (
           <div style={{
             padding: '3rem',
             textAlign: 'center',

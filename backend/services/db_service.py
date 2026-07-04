@@ -4,7 +4,7 @@ from datetime import datetime
 from db.database import SessionLocal
 from models.patient import PatientDB, ConsultationHistoryDB
 
-def _save_consultation_sync(patient_data: dict, ai_response: dict):
+def _save_consultation_sync(patient_data: dict, ai_response: dict, user_id: int = None):
     db = SessionLocal()
     try:
         # Create Patient
@@ -34,7 +34,8 @@ def _save_consultation_sync(patient_data: dict, ai_response: dict):
             custom_disease_details=patient_data.get("customDiseaseDetails", ""),
             ai_analysis=ai_response.get("analysis", ""),
             ai_medicines=ai_medicines,
-            ai_advice=ai_response.get("advice", "")
+            ai_advice=ai_response.get("advice", ""),
+            admin_person_id=user_id
         )
         db.add(consultation)
         db.commit()
@@ -46,13 +47,17 @@ def _save_consultation_sync(patient_data: dict, ai_response: dict):
     finally:
         db.close()
 
-async def save_consultation(patient_data: dict, ai_response: dict):
-    return await asyncio.to_thread(_save_consultation_sync, patient_data, ai_response)
+async def save_consultation(patient_data: dict, ai_response: dict, user_id: int = None):
+    return await asyncio.to_thread(_save_consultation_sync, patient_data, ai_response, user_id)
 
-def _get_all_consultations_sync():
+def _get_all_consultations_sync(user_id: int = None, role: str = None):
     db = SessionLocal()
     try:
-        consultations = db.query(ConsultationHistoryDB).order_by(ConsultationHistoryDB.created_at.desc()).limit(100).all()
+        query = db.query(ConsultationHistoryDB)
+        if role != 'admin' and user_id is not None:
+            query = query.filter(ConsultationHistoryDB.admin_person_id == user_id)
+        
+        consultations = query.order_by(ConsultationHistoryDB.created_at.desc()).limit(100).all()
         result = []
         for c in consultations:
             patient = db.query(PatientDB).filter(PatientDB.id == c.patient_id).first()
@@ -86,5 +91,5 @@ def _get_all_consultations_sync():
     finally:
         db.close()
 
-async def get_all_consultations():
-    return await asyncio.to_thread(_get_all_consultations_sync)
+async def get_all_consultations(user_id: int = None, role: str = None):
+    return await asyncio.to_thread(_get_all_consultations_sync, user_id, role)

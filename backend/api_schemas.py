@@ -25,7 +25,7 @@ class FollowUpAnswer(BaseModel):
     answer: str
 
 class PatientProfile(BaseModel):
-    name: str = Field(..., min_length=1)
+    name: Optional[str] = Field(default="")
     age: str = Field(..., min_length=1)
     gender: str = Field(..., min_length=1)
     maritalStatus: str = Field(..., min_length=1)
@@ -37,6 +37,7 @@ class PatientProfile(BaseModel):
 
 class MedicineRecommendation(BaseModel):
     name: str = Field(description="Name of the homeopathic medicine (e.g., 'Belladonna')")
+    match_percentage: int = Field(description="Percentage score (e.g. 85) indicating how preferable this medicine is for the specific disease")
     dosage: str = Field(description="Recommended potency and dosage amount (e.g., '200C - 3 drops or 4 pills')")
     how_to_take: str = Field(description="Detailed instructions on how to take the medicine (e.g., 'Take with 1 spoon of water, 4 hours apart, empty stomach')")
     description: str = Field(description="Indications and brief reasoning (e.g., 'Violent throbbing headache...')")
@@ -44,8 +45,8 @@ class MedicineRecommendation(BaseModel):
 
 class ConsultationData(BaseModel):
     analysis: str = Field(description="Marez ko naam se address karen aur symptoms ka mukhtasar tajziya in Roman Urdu.")
-    medicines: List[MedicineRecommendation] = Field(description="List of 2-4 recommended homeopathic remedies.")
-    advice: str = Field(description="Lifestyle / precautionary advice and doctor consultation reminder in Roman Urdu.")
+    medicines: List[MedicineRecommendation] = Field(description="List of at least 4 recommended homeopathic remedies.")
+    recommended_tests: Optional[List[str]] = Field(default=[], description="List of recommended medical or lab tests if applicable (in Roman Urdu/English). Leave empty if none required.")
 
 class FollowUpQuestionsRequest(BaseModel):
     symptoms: Optional[str] = ""

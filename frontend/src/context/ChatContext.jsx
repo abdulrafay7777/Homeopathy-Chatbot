@@ -18,7 +18,7 @@ const INITIAL_PATIENT_DATA = {
   customDiseaseDetails: '',
 };
 
-const BASE_STEP_COUNT = 5;
+const BASE_STEP_COUNT = 4;
 
 export const ChatProvider = ({ children }) => {
   const [step, setStep] = useState(0);

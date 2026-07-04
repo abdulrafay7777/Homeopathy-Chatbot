@@ -70,7 +70,7 @@ const ChatHeader = () => {
           </div>
           <DropdownItem onClick={() => navigate('/profile')}>
             <User size={16} />
-            <span>Profile Settings</span>
+            <span>Profile</span>
           </DropdownItem>
           <DropdownItem onClick={() => navigate('/subscription')}>
             <CreditCard size={16} />

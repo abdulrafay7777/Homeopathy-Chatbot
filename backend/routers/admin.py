@@ -1,9 +1,44 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
+from db.database import get_db
+from core.security import get_password_hash
+from api.deps import require_admin
 
 router = APIRouter()
 
+from schemas.admin_person import AdminPersonCreate, AdminPersonResponse
+from models.admin_person import AdminPersonDB
+
+@router.post("/api/admin/create-user", response_model=AdminPersonResponse)
+def create_admin_user(user: AdminPersonCreate, db: Session = Depends(get_db), current_user: AdminPersonDB = Depends(require_admin)):
+    # Check if user already exists
+    existing_user = db.query(AdminPersonDB).filter(AdminPersonDB.email == user.email).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    hashed_password = get_password_hash(user.password)
+    db_user = AdminPersonDB(
+        name=user.name,
+        email=user.email,
+        password_hash=hashed_password,
+        role=user.role,
+        plan=user.plan
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return AdminPersonResponse.from_orm(db_user)
+
+from typing import List
+
+@router.get("/api/admin/users", response_model=List[AdminPersonResponse])
+def get_all_users(db: Session = Depends(get_db), current_user: AdminPersonDB = Depends(require_admin)):
+    users = db.query(AdminPersonDB).order_by(AdminPersonDB.created_at.desc()).all()
+    # Convert DB models to Pydantic models using from_orm to format created_at
+    return [AdminPersonResponse.from_orm(user) for user in users]
+
 @router.get("/api/admin/dashboard-stats")
-def get_admin_dashboard_stats():
+def get_admin_dashboard_stats(current_user: AdminPersonDB = Depends(require_admin)):
     from db.database import SessionLocal
     db = SessionLocal()
     try:
@@ -30,7 +65,7 @@ def get_admin_dashboard_stats():
         consultations_per_patient = db.query(
             PatientDB.name, 
             func.count(ConsultationHistoryDB.id).label('consultation_count')
-        ).outerjoin(ConsultationHistoryDB).group_by(PatientDB.id).all()
+        ).outerjoin(ConsultationHistoryDB).group_by(PatientDB.name).all()
         
         graph_data = [
             {"patientName": row[0], "consultations": row[1]}
@@ -47,7 +82,7 @@ def get_admin_dashboard_stats():
             "graphData": graph_data
         }
     except Exception as e:
-        print(f"❌ [ERROR] Admin stats error: {str(e)}")
+        print(f"[ERROR] Admin stats error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch admin stats")
     finally:
         db.close()

@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import ChatPage from './pages/ChatPage';
 import LoginPage from './pages/LoginPage';
 import NotFound from './pages/NotFound';
@@ -10,12 +11,16 @@ import AdminDashboard from './pages/AdminDashboard';
 import DashboardPage from './pages/DashboardPage';
 import HistoryPage from './pages/HistoryPage';
 import KnowledgeBasePage from './pages/KnowledgeBasePage';
+import AdminRoute from './components/auth/AdminRoute';
 import HelpSupportPage from './pages/HelpSupportPage';
+
 function App() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   return (
     <Router>
+      <Toaster />
       <ThemeToggle />
 
       <Routes>
@@ -50,7 +55,11 @@ function App() {
 
         <Route 
           path="/admin" 
-          element={isAuthenticated ? <AdminDashboard /> : <Navigate to="/login" />} 
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          } 
         />
 
         <Route 

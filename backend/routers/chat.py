@@ -30,7 +30,7 @@ async def send_message(request: ChatRequest):
                 detail="AI service configuration error. Please contact administrator."
             )
 
-        print("✅ [DEBUG] LLM validation passed")
+        print("[DEBUG] LLM validation passed")
 
         # Build messages for LangChain
         messages = [SystemMessage(content=SYSTEM_PROMPT)]
@@ -59,11 +59,10 @@ async def send_message(request: ChatRequest):
         result = await llm.ainvoke(messages)
         ai_response = result.content
 
-        print("✅ [DEBUG] LLM response received")
-        print(f"🔍 [DEBUG] Response type: {type(result)}")
-        print(f"📤 [DEBUG] Response length: {len(ai_response)} chars")
-        print(f"📤 [DEBUG] Response preview: {ai_response[:200]}...")
-        print(f"{'='*60}\n")
+        print("[DEBUG] LLM response received")
+        print(f"[DEBUG] Response type: {type(result)}")
+        print(f"[DEBUG] Response length: {len(ai_response)} chars")
+        print(f"[DEBUG] Response preview: {ai_response[:200]}...")
 
         return {
             "success": True,

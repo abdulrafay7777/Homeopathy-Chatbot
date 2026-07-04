@@ -1,4 +1,4 @@
-import { ArrowLeft, User, Mail, Shield, Calendar, Edit2, Key } from 'lucide-react';
+import { ArrowLeft, User, Mail, Shield, Calendar, Key } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -70,7 +70,7 @@ const ProfilePage = () => {
             <ArrowLeft size={20} />
             <span>Back</span>
           </button>
-          <h1 style={{ fontSize: '20px', fontWeight: '600' }}>Profile Settings</h1>
+          <h1 style={{ fontSize: '20px', fontWeight: '600' }}>Profile Overview</h1>
           <div style={{ width: '80px' }}></div>
         </div>
       </header>
@@ -121,33 +121,7 @@ const ProfilePage = () => {
                   {user?.role || 'User'}
                 </span>
               </div>
-              <button
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.625rem 1.25rem',
-                  backgroundColor: 'var(--color-gemini-surface-2)',
-                  border: '1px solid var(--color-gemini-border)',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: 'var(--color-gemini-text)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'var(--color-gemini-surface-hover)';
-                  e.target.style.borderColor = 'var(--color-gemini-accent)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'var(--color-gemini-surface-2)';
-                  e.target.style.borderColor = 'var(--color-gemini-border)';
-                }}
-              >
-                <Edit2 size={16} />
-                Edit Profile
-              </button>
+
             </div>
           </div>
 

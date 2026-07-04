@@ -50,8 +50,16 @@ cd Chatbot
    pip install -r requirements.txt
    ```
 4. Configure Environment Variables:
-   Create a `.env` file in the `backend` directory based on your required keys (e.g., `GOOGLE_API_KEY`, `GROQ_API_KEY`, `DATABASE_URL`, etc.).
-
+   Create a `.env` file in the `backend` directory based on your required keys:
+   ```env
+   GROQ_API_KEY=your_groq_api_key
+   DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/patient_db
+   FIREBASE_CREDENTIALS_PATH=D:\absolute\path\to\firebase-adminsdk.json
+   JWT_SECRET_KEY=your_secure_32_byte_secret_key
+   PORT=5000
+   FRONTEND_URL=http://localhost:5173
+   ```
+   *Make sure to download your Firebase Service Account key and point `FIREBASE_CREDENTIALS_PATH` to it.*
 5. Run the FastAPI server:
    ```bash
    python app.py

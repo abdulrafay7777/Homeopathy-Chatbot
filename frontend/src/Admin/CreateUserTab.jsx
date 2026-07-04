@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { User, Mail, Lock, Shield, Save } from 'lucide-react';
+import { apiClient } from '../services/api';
+import toast from 'react-hot-toast';
 
 const CreateUserTab = () => {
   const [formData, setFormData] = useState({
@@ -14,12 +16,34 @@ const CreateUserTab = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Creating user:', formData);
-    // Add API call here
-    alert('User created successfully!');
-    setFormData({ name: '', email: '', password: '', role: 'student', plan: 'basic' });
+    
+    // Frontend Validation
+    if (formData.name.trim().length < 2) {
+      return toast.error('Name must be at least 2 characters long');
+    }
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(formData.email)) {
+      return toast.error('Please enter a valid email address');
+    }
+    if (formData.password.length < 6) {
+      return toast.error('Password must be at least 6 characters long');
+    }
+    
+    try {
+      const response = await apiClient.post('/admin/create-user', formData);
+      toast.success('User created successfully!');
+      setFormData({ name: '', email: '', password: '', role: 'student', plan: 'basic' });
+    } catch (error) {
+      console.error('Error creating user:', error);
+      // Handle Pydantic validation errors nicely
+      if (error.response?.status === 422) {
+        toast.error('Validation Error: Please check your input fields.');
+      } else {
+        toast.error(error.response?.data?.detail || 'Failed to create user. Please try again.');
+      }
+    }
   };
 
   return (
