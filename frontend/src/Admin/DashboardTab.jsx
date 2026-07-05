@@ -183,11 +183,11 @@ const DashboardTab = () => {
                   fontSize: '12px',
                   padding: '0.375rem 0.75rem',
                   borderRadius: '9999px',
-                  backgroundColor: user.role === 'Doctor' ? 'rgba(139, 92, 246, 0.1)' : 'rgba(56, 189, 248, 0.1)',
-                  color: user.role === 'Doctor' ? '#8b5cf6' : '#38bdf8',
+                  backgroundColor: user.role === 'admin' ? 'rgba(139, 92, 246, 0.1)' : 'rgba(56, 189, 248, 0.1)',
+                  color: user.role === 'admin' ? '#8b5cf6' : '#38bdf8',
                   fontWeight: '600'
                 }}>
-                  {user.role}
+                  {user.role === 'admin' ? 'Doctor' : user.role === 'patient' ? 'Student' : user.role}
                 </span>
                 <p style={{
                   fontSize: '12px',
@@ -221,7 +221,7 @@ const DashboardTab = () => {
           color: 'var(--color-gemini-text)',
           marginBottom: '1.5rem'
         }}>
-          Consultations per Patient
+          Consultations per Student
         </h3>
         
         {graphData.length > 0 ? (

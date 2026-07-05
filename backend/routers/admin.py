@@ -22,9 +22,37 @@ def create_admin_user(user: AdminPersonCreate, db: Session = Depends(get_db), cu
         email=user.email,
         password_hash=hashed_password,
         role=user.role,
-        plan=user.plan
+        subscription_start_date=user.subscription_start_date,
+        subscription_end_date=user.subscription_end_date,
+        is_active=user.is_active
     )
     db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return AdminPersonResponse.from_orm(db_user)
+
+from pydantic import BaseModel
+from typing import Optional
+from datetime import date
+
+class AdminPersonUpdate(BaseModel):
+    is_active: Optional[bool] = None
+    subscription_start_date: Optional[date] = None
+    subscription_end_date: Optional[date] = None
+
+@router.put("/api/admin/users/{user_id}", response_model=AdminPersonResponse)
+def update_admin_user(user_id: int, user_update: AdminPersonUpdate, db: Session = Depends(get_db), current_user: AdminPersonDB = Depends(require_admin)):
+    db_user = db.query(AdminPersonDB).filter(AdminPersonDB.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if user_update.is_active is not None:
+        db_user.is_active = user_update.is_active
+    if user_update.subscription_start_date is not None:
+        db_user.subscription_start_date = user_update.subscription_start_date
+    if user_update.subscription_end_date is not None:
+        db_user.subscription_end_date = user_update.subscription_end_date
+        
     db.commit()
     db.refresh(db_user)
     return AdminPersonResponse.from_orm(db_user)

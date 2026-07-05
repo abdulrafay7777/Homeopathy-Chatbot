@@ -85,7 +85,7 @@ async def follow_up_questions(request: FollowUpQuestionsRequest):
 
 
 @router.post("/api/consultation", response_model=ChatResponse)
-async def consultation(request: ConsultationRequest, current_user: dict = Depends(get_current_user)):
+async def consultation(request: ConsultationRequest, current_user = Depends(get_current_user)):
     """Generate homeopathic recommendation from patient profile and symptoms."""
     if llm is None:
         raise HTTPException(
@@ -94,7 +94,7 @@ async def consultation(request: ConsultationRequest, current_user: dict = Depend
         )
 
     try:
-        request.patient.name = current_user.get("name", "Unknown")
+        request.patient.name = getattr(current_user, "name", "Unknown")
         
         messages = [
             SystemMessage(content=CONSULTATION_SYSTEM_PROMPT),
@@ -108,7 +108,7 @@ async def consultation(request: ConsultationRequest, current_user: dict = Depend
         try:
             patient_dict = request.patient.model_dump()
             ai_dict = result.model_dump()
-            await save_consultation(patient_dict, ai_dict, user_id=int(current_user["sub"]))
+            await save_consultation(patient_dict, ai_dict, user_id=current_user.id)
         except Exception as db_err:
             print(f"Failed to save consultation to DB: {db_err}")
         
@@ -123,9 +123,9 @@ async def consultation(request: ConsultationRequest, current_user: dict = Depend
         return handle_llm_error(e)
 
 @router.get("/api/consultations")
-async def fetch_consultations(current_user: dict = Depends(get_current_user)):
+async def fetch_consultations(current_user = Depends(get_current_user)):
     """Retrieve patient consultation history from the database."""
-    consultations = await get_all_consultations(user_id=int(current_user["sub"]), role=current_user.get("role"))
+    consultations = await get_all_consultations(user_id=current_user.id, role=getattr(current_user, "role", None))
     return {
         "success": True,
         "data": consultations,

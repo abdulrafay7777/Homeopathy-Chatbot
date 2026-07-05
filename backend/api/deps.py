@@ -34,6 +34,26 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             headers={"WWW-Authenticate": "Bearer"},
         )
         
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been deactivated by an administrator"
+        )
+        
+    if user.role != "admin":
+        from datetime import date
+        today = date.today()
+        if user.subscription_start_date and today < user.subscription_start_date:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your subscription has not started yet"
+            )
+        if user.subscription_end_date and today > user.subscription_end_date:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your subscription has expired"
+            )
+            
     return user
 
 def require_admin(current_user: AdminPersonDB = Depends(get_current_user)):

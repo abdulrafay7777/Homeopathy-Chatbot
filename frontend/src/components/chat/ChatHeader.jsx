@@ -72,10 +72,10 @@ const ChatHeader = () => {
             <User size={16} />
             <span>Profile</span>
           </DropdownItem>
-          <DropdownItem onClick={() => navigate('/subscription')}>
+          {/* <DropdownItem onClick={() => navigate('/subscription')}>
             <CreditCard size={16} />
             <span>Subscription</span>
-          </DropdownItem>
+          </DropdownItem> */}
           <DropdownItem onClick={handleLogout} danger>
             <LogOut size={16} />
             <span>Logout</span>

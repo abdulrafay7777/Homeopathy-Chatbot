@@ -1,17 +1,33 @@
 import { useNavigate } from 'react-router-dom';
 import { Stethoscope, History, CreditCard, BookOpen, Settings, HelpCircle } from 'lucide-react';
 import ChatHeader from '../components/chat/ChatHeader';
+import { useAuth } from '../context/AuthContext';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  let canConsult = user?.is_active ?? true;
+  if (canConsult && user?.role === 'patient') {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = user.subscription_start_date ? new Date(user.subscription_start_date) : null;
+    const end = user.subscription_end_date ? new Date(user.subscription_end_date) : null;
+    if (start) start.setHours(0, 0, 0, 0);
+    if (end) end.setHours(0, 0, 0, 0);
+    
+    if (start && today < start) canConsult = false;
+    if (end && today > end) canConsult = false;
+  }
 
   const menuItems = [
     {
       title: 'New Consultation',
-      description: 'Start a new homeopathic case taking',
+      description: canConsult ? 'Start a new homeopathic case taking' : 'Consultation unavailable (Subscription inactive)',
       icon: Stethoscope,
       path: '/consultation',
-      color: 'from-blue-500 to-cyan-400'
+      color: canConsult ? 'from-blue-500 to-cyan-400' : 'from-gray-400 to-gray-500',
+      disabled: !canConsult
     },
     {
       title: 'Patients History',
@@ -20,13 +36,13 @@ const DashboardPage = () => {
       path: '/history',
       color: 'from-purple-500 to-pink-500'
     },
-    {
-      title: 'Plans & Pricing',
-      description: 'Manage your subscription and billing details',
-      icon: CreditCard,
-      path: '/subscription',
-      color: 'from-amber-500 to-orange-400'
-    },
+    // {
+    //   title: 'Plans & Pricing',
+    //   description: 'Manage your subscription and billing details',
+    //   icon: CreditCard,
+    //   path: '/subscription',
+    //   color: 'from-amber-500 to-orange-400'
+    // },
     {
       title: 'Knowledge Base',
       description: 'Explore homeopathic remedies and materia medica',
@@ -63,8 +79,8 @@ const DashboardPage = () => {
               return (
                 <div 
                   key={index}
-                  onClick={() => navigate(item.path)}
-                  className="group relative p-6 rounded-3xl cursor-pointer transition-all duration-300 hover:scale-[1.02] border"
+                  onClick={() => !item.disabled && navigate(item.path)}
+                  className={`group relative p-6 rounded-3xl transition-all duration-300 border ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-[1.02]'}`}
                   style={{ 
                     backgroundColor: 'var(--color-gemini-surface)',
                     borderColor: 'var(--color-gemini-border)'

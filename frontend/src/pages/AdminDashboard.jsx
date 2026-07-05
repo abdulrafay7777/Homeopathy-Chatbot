@@ -6,7 +6,7 @@ import logo from '../assets/logo.png';
 // Import tab components
 import DashboardTab from '../Admin/DashboardTab';
 import CreateUserTab from '../Admin/CreateUserTab';
-import PlansTab from '../Admin/PlansTab';
+// import PlansTab from '../Admin/PlansTab';
 import AllUsersTab from '../Admin/AllUsersTab';
 
 const AdminDashboard = () => {
@@ -29,7 +29,7 @@ const AdminDashboard = () => {
   const tabs = [
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
     { id: 'create-user', name: 'Create User', icon: UserPlus },
-    { id: 'plans', name: 'Plans & Packages', icon: CreditCard },
+    // { id: 'plans', name: 'Plans & Packages', icon: CreditCard },
     { id: 'all-users', name: 'All Users', icon: Users },
   ];
 
@@ -43,8 +43,8 @@ const AdminDashboard = () => {
         return <DashboardTab />;
       case 'create-user':
         return <CreateUserTab />;
-      case 'plans':
-        return <PlansTab />;
+      // case 'plans':
+      //   return <PlansTab />;
       case 'all-users':
         return <AllUsersTab />;
       default:

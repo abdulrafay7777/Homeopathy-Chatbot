@@ -8,8 +8,9 @@ const CreateUserTab = () => {
     name: '',
     email: '',
     password: '',
-    role: 'student',
-    plan: 'basic'
+    role: 'patient',
+    subscription_start_date: '',
+    subscription_end_date: ''
   });
 
   const handleChange = (e) => {
@@ -34,7 +35,7 @@ const CreateUserTab = () => {
     try {
       const response = await apiClient.post('/admin/create-user', formData);
       toast.success('User created successfully!');
-      setFormData({ name: '', email: '', password: '', role: 'student', plan: 'basic' });
+      setFormData({ name: '', email: '', password: '', role: 'patient', subscription_start_date: '', subscription_end_date: '' });
     } catch (error) {
       console.error('Error creating user:', error);
       // Handle Pydantic validation errors nicely
@@ -280,64 +281,72 @@ const CreateUserTab = () => {
                   e.target.style.boxShadow = 'none';
                 }}
               >
-                <option value="student">Student</option>
-                <option value="doctor">Doctor</option>
-                <option value="admin">Admin</option>
+                <option value="patient">Student</option>
+                <option value="admin">Doctor</option>
               </select>
             </div>
           </div>
 
-          {/* Plan */}
-          <div style={{ width: '100%' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: 'var(--color-gemini-text)',
-              marginBottom: '0.5rem'
-            }}>
-              Subscription Plan *
-            </label>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: window.innerWidth < 640 ? '1fr' : 'repeat(3, 1fr)', 
-              gap: '0.75rem',
-              width: '100%'
-            }}>
-              {['basic', 'standard', 'premium'].map((plan) => (
-                <label
-                  key={plan}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '0.875rem 0.5rem',
-                    border: formData.plan === plan ? '2px solid var(--color-gemini-accent)' : '1px solid var(--color-gemini-border)',
-                    borderRadius: '12px',
-                    backgroundColor: formData.plan === plan ? 'rgba(139, 92, 246, 0.05)' : 'var(--color-gemini-surface-2)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    fontWeight: formData.plan === plan ? '600' : '500',
-                    color: 'var(--color-gemini-text)',
-                    textTransform: 'capitalize',
-                    fontSize: '14px',
-                    boxSizing: 'border-box',
-                    minWidth: 0
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="plan"
-                    value={plan}
-                    checked={formData.plan === plan}
-                    onChange={handleChange}
-                    style={{ marginRight: '0.5rem', flexShrink: 0 }}
-                  />
-                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {plan}
-                  </span>
-                </label>
-              ))}
+          {/* Subscription Dates */}
+          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 640 ? '1fr' : '1fr 1fr', gap: '1rem', width: '100%' }}>
+            <div style={{ width: '100%' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'var(--color-gemini-text)',
+                marginBottom: '0.5rem'
+              }}>
+                Subscription Start Date
+              </label>
+              <input
+                type="date"
+                name="subscription_start_date"
+                value={formData.subscription_start_date}
+                onChange={handleChange}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  fontSize: '15px',
+                  border: '1px solid var(--color-gemini-border)',
+                  borderRadius: '12px',
+                  backgroundColor: 'var(--color-gemini-surface-2)',
+                  color: 'var(--color-gemini-text)',
+                  outline: 'none',
+                  transition: 'all 0.2s',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            
+            <div style={{ width: '100%' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'var(--color-gemini-text)',
+                marginBottom: '0.5rem'
+              }}>
+                Subscription End Date
+              </label>
+              <input
+                type="date"
+                name="subscription_end_date"
+                value={formData.subscription_end_date}
+                onChange={handleChange}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  fontSize: '15px',
+                  border: '1px solid var(--color-gemini-border)',
+                  borderRadius: '12px',
+                  backgroundColor: 'var(--color-gemini-surface-2)',
+                  color: 'var(--color-gemini-text)',
+                  outline: 'none',
+                  transition: 'all 0.2s',
+                  boxSizing: 'border-box'
+                }}
+              />
             </div>
           </div>
 

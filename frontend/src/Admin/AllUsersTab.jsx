@@ -13,14 +13,14 @@ const AllUsersTab = () => {
     const fetchUsers = async () => {
       try {
         const response = await apiClient.get('/admin/users');
-        // Map the backend data to match the frontend expectations
         const fetchedUsers = response.data.map(user => ({
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
-          plan: user.plan,
-          status: 'active', // Defaulting to active since we don't have status in DB yet
+          subscription_start_date: user.subscription_start_date,
+          subscription_end_date: user.subscription_end_date,
+          is_active: user.is_active,
           joinDate: user.created_at
         }));
         setUsers(fetchedUsers);
@@ -44,21 +44,49 @@ const AllUsersTab = () => {
 
   const getRoleBadgeColor = (role) => {
     switch (role) {
-      case 'doctor':
-        return { bg: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' };
-      case 'student':
-        return { bg: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8' };
       case 'admin':
-        return { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' };
+        return { bg: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' };
+      case 'patient':
+        return { bg: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8' };
       default:
         return { bg: 'rgba(107, 114, 128, 0.1)', color: '#6b7280' };
     }
   };
 
-  const getStatusBadgeColor = (status) => {
-    return status === 'active'
-      ? { bg: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }
-      : { bg: 'rgba(107, 114, 128, 0.1)', color: '#6b7280' };
+  const getStatusBadgeColor = (isActive) => {
+    return {
+      bg: isActive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+      color: isActive ? '#22c55e' : '#ef4444'
+    };
+  };
+
+  const getDetailedStatus = (user) => {
+    if (!user.is_active) return { text: 'Disabled', color: '#ef4444' };
+    if (!user.subscription_start_date && !user.subscription_end_date) return { text: 'Active', color: '#22c55e' };
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const start = user.subscription_start_date ? new Date(user.subscription_start_date) : null;
+    const end = user.subscription_end_date ? new Date(user.subscription_end_date) : null;
+    
+    if (start) start.setHours(0, 0, 0, 0);
+    if (end) end.setHours(0, 0, 0, 0);
+    
+    if (start && today < start) return { text: 'Pending', color: '#eab308' };
+    if (end && today > end) return { text: 'Expired', color: '#ef4444' };
+    
+    return { text: 'Active', color: '#22c55e' };
+  };
+
+  const toggleUserStatus = async (userId, currentStatus) => {
+    try {
+      await apiClient.put(`/admin/users/${userId}`, { is_active: !currentStatus });
+      setUsers(users.map(u => u.id === userId ? { ...u, is_active: !currentStatus } : u));
+      toast.success(`User consultation access ${!currentStatus ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      toast.error('Failed to update user status');
+    }
   };
 
   return (
@@ -147,9 +175,8 @@ const AllUsersTab = () => {
               }}
             >
               <option value="all" style={{ padding: '0.5rem', backgroundColor: 'var(--color-gemini-surface)', color: 'var(--color-gemini-text)' }}>All Roles</option>
-              <option value="doctor" style={{ padding: '0.5rem', backgroundColor: 'var(--color-gemini-surface)', color: 'var(--color-gemini-text)' }}>Doctors</option>
-              <option value="student" style={{ padding: '0.5rem', backgroundColor: 'var(--color-gemini-surface)', color: 'var(--color-gemini-text)' }}>Students</option>
-              <option value="admin" style={{ padding: '0.5rem', backgroundColor: 'var(--color-gemini-surface)', color: 'var(--color-gemini-text)' }}>Admins</option>
+              <option value="admin" style={{ padding: '0.5rem', backgroundColor: 'var(--color-gemini-surface)', color: 'var(--color-gemini-text)' }}>Doctors</option>
+              <option value="patient" style={{ padding: '0.5rem', backgroundColor: 'var(--color-gemini-surface)', color: 'var(--color-gemini-text)' }}>Students</option>
             </select>
           </div>
         </div>
@@ -169,15 +196,16 @@ const AllUsersTab = () => {
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>User</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Email</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Role</th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Plan</th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Status</th>
+                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Sub Start</th>
+                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Sub End</th>
+                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Consultation Status</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Join Date</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map((user) => {
                 const roleBadge = getRoleBadgeColor(user.role);
-                const statusBadge = getStatusBadgeColor(user.status);
+                const statusBadge = getStatusBadgeColor(user.is_active);
                 
                 return (
                   <tr key={user.id} style={{ borderBottom: '1px solid var(--color-gemini-border)' }}>
@@ -215,24 +243,49 @@ const AllUsersTab = () => {
                         color: roleBadge.color,
                         textTransform: 'capitalize'
                       }}>
-                        {user.role}
+                        {user.role === 'admin' ? 'doctor' : user.role === 'patient' ? 'student' : user.role}
                       </span>
                     </td>
                     <td style={{ padding: '1rem', fontSize: '14px', fontWeight: '500', color: 'var(--color-gemini-text)' }}>
-                      {user.plan}
+                      {user.subscription_start_date ? new Date(user.subscription_start_date).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td style={{ padding: '1rem', fontSize: '14px', fontWeight: '500', color: 'var(--color-gemini-text)' }}>
+                      {user.subscription_end_date ? new Date(user.subscription_end_date).toLocaleDateString() : 'N/A'}
                     </td>
                     <td style={{ padding: '1rem' }}>
-                      <span style={{
-                        padding: '0.375rem 0.75rem',
-                        borderRadius: '9999px',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        backgroundColor: statusBadge.bg,
-                        color: statusBadge.color,
-                        textTransform: 'capitalize'
-                      }}>
-                        {user.status}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div 
+                          onClick={() => toggleUserStatus(user.id, user.is_active)}
+                          style={{
+                            width: '44px',
+                            height: '24px',
+                            backgroundColor: user.is_active ? '#22c55e' : '#e5e7eb',
+                            borderRadius: '9999px',
+                            position: 'relative',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.2s ease'
+                          }}
+                        >
+                          <div style={{
+                            width: '20px',
+                            height: '20px',
+                            backgroundColor: 'white',
+                            borderRadius: '50%',
+                            position: 'absolute',
+                            top: '2px',
+                            left: user.is_active ? '22px' : '2px',
+                            transition: 'left 0.2s ease',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          }} />
+                        </div>
+                        <span style={{ 
+                          fontSize: '13px', 
+                          fontWeight: '600', 
+                          color: getDetailedStatus(user).color 
+                        }}>
+                          {getDetailedStatus(user).text}
+                        </span>
+                      </div>
                     </td>
                     <td style={{ padding: '1rem', fontSize: '14px', color: 'var(--color-gemini-text-muted)' }}>
                       {new Date(user.joinDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

@@ -34,5 +34,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         "name": user.name,
         "email": user.email,
         "role": user.role,
-        "plan": user.plan
+        "is_active": user.is_active,
+        "subscription_start_date": user.subscription_start_date.isoformat() if user.subscription_start_date else None,
+        "subscription_end_date": user.subscription_end_date.isoformat() if user.subscription_end_date else None
     }}

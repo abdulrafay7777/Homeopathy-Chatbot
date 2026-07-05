@@ -54,9 +54,6 @@ const HistoryPage = () => {
               }}>
                 Patients History
               </h1>
-              <p className="text-sm mt-1" style={{ color: 'var(--color-gemini-text-muted)' }}>
-                View past consultations and AI recommendations
-              </p>
             </div>
             
             <button

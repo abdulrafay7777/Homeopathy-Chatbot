@@ -1,18 +1,24 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional
+from datetime import date
 
 class AdminPersonCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=100, description="Full name of the user")
-    email: str = Field(..., pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", description="Valid email address")
+    email: EmailStr = Field(description="Valid email address")
     password: str = Field(..., min_length=6, max_length=50, description="Password must be at least 6 characters")
-    role: str = Field(..., pattern="^(student|doctor|admin)$", description="Role must be student, doctor, or admin")
-    plan: str = Field(..., pattern="^(basic|standard|premium)$", description="Plan must be basic, standard, or premium")
+    role: str = Field(..., pattern="^(patient|admin)$", description="Role must be patient or admin")
+    subscription_start_date: Optional[date] = None
+    subscription_end_date: Optional[date] = None
+    is_active: bool = True
 
 class AdminPersonResponse(BaseModel):
     id: int
     name: str
     email: str
     role: str
-    plan: str
+    subscription_start_date: Optional[date]
+    subscription_end_date: Optional[date]
+    is_active: bool
     created_at: str
 
     model_config = {"from_attributes": True}
@@ -24,7 +30,9 @@ class AdminPersonResponse(BaseModel):
             name=obj.name,
             email=obj.email,
             role=obj.role,
-            plan=obj.plan,
+            subscription_start_date=obj.subscription_start_date,
+            subscription_end_date=obj.subscription_end_date,
+            is_active=obj.is_active,
             created_at=obj.created_at.strftime("%Y-%m-%d") if obj.created_at else "Unknown"
         )
 
