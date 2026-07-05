@@ -6,7 +6,8 @@
     },
     "backend": {
       "root": "backend",
-      "entrypoint": "app:app"
+      "framework": "fastapi",
+      "entrypoint": "app.py"
     }
   },
   "rewrites": [
@@ -18,4 +19,3 @@
     }
   ]
 }
-
