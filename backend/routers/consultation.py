@@ -3,7 +3,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, Field
 from typing import List
 
-from api_schemas import (
+from schemas.chat_schemas import (
     CommonDiseasesResponse, 
     FollowUpQuestionsRequest, 
     FollowUpQuestionsResponse,
@@ -16,7 +16,7 @@ from core.prompts import CONSULTATION_SYSTEM_PROMPT
 from core.dependencies import get_current_user
 from utils.helpers import get_pkt_now, build_consultation_prompt
 from utils.exceptions import handle_llm_error
-from disease_questions import get_common_diseases, get_disease_label
+from utils.disease_questions import get_common_diseases, get_disease_label
 from services.db_service import save_consultation, get_all_consultations, get_daily_consultation_count
 
 router = APIRouter()

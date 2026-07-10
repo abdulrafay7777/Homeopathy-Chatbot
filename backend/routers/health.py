@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from api_schemas import HealthResponse
+from schemas.chat_schemas import HealthResponse
 from utils.helpers import get_pkt_now
 
 router = APIRouter()

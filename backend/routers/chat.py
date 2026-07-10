@@ -3,7 +3,7 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from core.config import llm, GROQ_API_KEY
 from core.prompts import SYSTEM_PROMPT
 from utils.helpers import get_pkt_now
-from api_schemas import ChatRequest, ChatResponse
+from schemas.chat_schemas import ChatRequest, ChatResponse
 
 router = APIRouter()
 

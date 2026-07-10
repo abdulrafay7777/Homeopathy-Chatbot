@@ -20,7 +20,6 @@ class PatientDB(Base):
     # Establish one-to-many relationship with consultations
     consultations = relationship("ConsultationHistoryDB", back_populates="patient")
 
-
 class ConsultationHistoryDB(Base):
     __tablename__ = "consultation_history"
 

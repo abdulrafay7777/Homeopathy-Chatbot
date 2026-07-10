@@ -1,5 +1,5 @@
 from datetime import datetime, timezone, timedelta
-from api_schemas import PatientProfile
+from schemas.chat_schemas import PatientProfile
 
 def get_pkt_now():
     return datetime.now(timezone(timedelta(hours=5)))
