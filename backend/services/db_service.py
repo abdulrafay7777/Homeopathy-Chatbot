@@ -93,3 +93,23 @@ def _get_all_consultations_sync(user_id: int = None, role: str = None):
 
 async def get_all_consultations(user_id: int = None, role: str = None):
     return await asyncio.to_thread(_get_all_consultations_sync, user_id, role)
+
+def _get_daily_consultation_count_sync(user_id: int) -> int:
+    db = SessionLocal()
+    try:
+        from datetime import date
+        from sqlalchemy import cast, Date
+        today = date.today()
+        count = db.query(ConsultationHistoryDB).filter(
+            ConsultationHistoryDB.admin_person_id == user_id,
+            cast(ConsultationHistoryDB.created_at, Date) == today
+        ).count()
+        return count
+    except Exception as e:
+        print(f"Error counting daily consultations: {e}")
+        return 0
+    finally:
+        db.close()
+
+async def get_daily_consultation_count(user_id: int) -> int:
+    return await asyncio.to_thread(_get_daily_consultation_count_sync, user_id)

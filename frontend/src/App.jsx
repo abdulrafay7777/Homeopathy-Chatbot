@@ -12,7 +12,7 @@ import DashboardPage from './pages/DashboardPage';
 import HistoryPage from './pages/HistoryPage';
 import KnowledgeBasePage from './pages/KnowledgeBasePage';
 import AdminRoute from './components/auth/AdminRoute';
-import HelpSupportPage from './pages/HelpSupportPage';
+import ImportancePage from './pages/ImportancePage';
 
 function App() {
   const { isAuthenticated, user } = useAuth();
@@ -68,8 +68,8 @@ function App() {
         />
 
         <Route 
-          path="/support" 
-          element={isAuthenticated ? <HelpSupportPage /> : <Navigate to="/login" />} 
+          path="/importance" 
+          element={isAuthenticated ? <ImportancePage /> : <Navigate to="/login" />} 
         />
 
         {/* Catch-all for 404 */}
@@ -80,3 +80,4 @@ function App() {
 }
 
 export default App;
+// Force recompile

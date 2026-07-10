@@ -32,10 +32,18 @@ import models.patient
 import models.admin_person
 Base.metadata.create_all(bind=engine)
 
-# Configure CORS
+from fastapi.staticfiles import StaticFiles
+
+# Ensure uploads directory exists
+os.makedirs("uploads/avatars", exist_ok=True)
+
+# Mount static files
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+# Configure CORS    
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_URL", "http://localhost:5173")],
+    allow_origins=[os.getenv("FRONTEND_URL")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

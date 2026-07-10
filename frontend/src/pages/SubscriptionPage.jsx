@@ -8,62 +8,21 @@ const SubscriptionPage = () => {
 
   const plans = [
     {
-      id: 'basic',
-      name: 'Basic',
-      price: '1,500',
-      currency: 'Rs',
-      period: '/month',
-      prompts: '35 prompts/day',
-      users: 45,
-      features: [
-        'Basic AI responses',
-        '35 daily prompts',
-        'Email support',
-        'Basic templates',
-      ],
-      buttonText: 'Select plan',
-      popular: false,
-    },
-    {
       id: 'standard',
-      name: 'Standard',
-      price: '2,800',
+      name: 'Standard Plan',
+      price: '5,000',
       currency: 'Rs',
       period: '/month',
-      prompts: '70 prompts/day',
-      users: 82,
+      prompts: '6 consultations/day',
+      users: 100,
       features: [
-        'Advanced AI responses',
-        '70 daily prompts',
-        'Priority email support',
-        'Advanced templates',
-        'Custom responses',
-        'Analytics dashboard',
+        'Consult up to 6 patients daily',
+        'Full diagnosis analysis',
+        'Priority support'
       ],
-      buttonText: 'Select plan',
+      buttonText: 'Current Plan',
       popular: true,
-    },
-    {
-      id: 'premium',
-      name: 'Premium',
-      price: '4,500',
-      currency: 'Rs',
-      period: '/month',
-      prompts: '110 prompts/day',
-      users: 27,
-      features: [
-        'Premium AI responses',
-        '110 daily prompts',
-        '24/7 priority support',
-        'All premium templates',
-        'Custom AI training',
-        'Advanced analytics',
-        'API access',
-        'White-label options',
-      ],
-      buttonText: 'Select plan',
-      popular: false,
-    },
+    }
   ];
 
   return (

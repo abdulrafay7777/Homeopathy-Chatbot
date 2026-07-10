@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { Dropdown, DropdownTrigger, DropdownContent, DropdownItem } from '../common/Dropdown';
+import { API_BASE_URL } from '../../utils/constants';
 
 const ChatHeader = () => {
   const { phase, resetConsultation } = useChat();
@@ -54,8 +55,16 @@ const ChatHeader = () => {
 
       <Dropdown>
         <DropdownTrigger>
-          <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-gemini-accent via-[#7f7cff] to-gemini-accent-3 text-white font-semibold cursor-pointer hover:scale-105 hover:shadow-lg transition-all duration-200 ring-2 ring-transparent hover:ring-gemini-accent/30">
-            {user?.initial || user?.name?.charAt(0).toUpperCase() || 'U'}
+          <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-gemini-accent via-[#7f7cff] to-gemini-accent-3 text-white font-semibold cursor-pointer hover:scale-105 hover:shadow-lg transition-all duration-200 ring-2 ring-transparent hover:ring-gemini-accent/30 overflow-hidden">
+            {user?.profile_image ? (
+              <img 
+                src={`${API_BASE_URL.replace(/\/api$/, '')}${user.profile_image}`}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              user?.initial || user?.name?.charAt(0).toUpperCase() || 'U'
+            )}
           </div>
         </DropdownTrigger>
 
@@ -72,10 +81,10 @@ const ChatHeader = () => {
             <User size={16} />
             <span>Profile</span>
           </DropdownItem>
-          {/* <DropdownItem onClick={() => navigate('/subscription')}>
+          <DropdownItem onClick={() => navigate('/subscription')}>
             <CreditCard size={16} />
             <span>Subscription</span>
-          </DropdownItem> */}
+          </DropdownItem>
           <DropdownItem onClick={handleLogout} danger>
             <LogOut size={16} />
             <span>Logout</span>

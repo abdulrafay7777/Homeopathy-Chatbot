@@ -17,7 +17,7 @@ from core.dependencies import get_current_user
 from utils.helpers import get_pkt_now, build_consultation_prompt
 from utils.exceptions import handle_llm_error
 from disease_questions import get_common_diseases, get_disease_label
-from services.db_service import save_consultation, get_all_consultations
+from services.db_service import save_consultation, get_all_consultations, get_daily_consultation_count
 
 router = APIRouter()
 
@@ -30,6 +30,16 @@ async def common_diseases():
         "timestamp": get_pkt_now().isoformat(),
     }
 
+@router.get("/api/consultation/check-limit")
+async def check_limit(current_user = Depends(get_current_user)):
+    """Check if the user has reached their daily consultation limit."""
+    if current_user and getattr(current_user, "role", "patient") != "admin":
+        count = await get_daily_consultation_count(current_user.id)
+        if count >= 6:
+            raise HTTPException(status_code=403, detail="Limit reached come back after 24 hrs")
+    
+    return {"success": True, "allowed": True}
+
 
 class GeneratedQuestion(BaseModel):
     id: str = Field(description="Short ID for the question (e.g. 'duration', 'pain_type')")
@@ -40,8 +50,14 @@ class GeneratedQuestionsData(BaseModel):
     questions: List[GeneratedQuestion] = Field(description="List of 3-4 follow-up questions to ask the patient about their specific condition")
 
 @router.post("/api/consultation/follow-up-questions", response_model=FollowUpQuestionsResponse)
-async def follow_up_questions(request: FollowUpQuestionsRequest):
+async def follow_up_questions(request: FollowUpQuestionsRequest, current_user = Depends(get_current_user)):
     """Dynamically generate MCQ follow-up questions using LLM based on selected disease or symptoms."""
+    # Check daily limit
+    if current_user and getattr(current_user, "role", "patient") != "admin":
+        count = await get_daily_consultation_count(current_user.id)
+        if count >= 6:
+            raise HTTPException(status_code=403, detail="Limit reached come back after 24 hrs")
+
     symptoms = (request.symptoms or "").strip()
     disease_id = request.diseaseId
     
@@ -61,25 +77,29 @@ async def follow_up_questions(request: FollowUpQuestionsRequest):
         context_str = f"Disease ID: {disease_id}"
 
     if llm:
-        try:
-            system_prompt = f"You are a homeopathic expert. The patient has reported: '{context_str}'. Generate exactly 4 highly relevant multiple-choice follow-up questions ONLY in Roman Urdu (no Hindi script, no English translations, no Arabic script Urdu) to ask the patient for an accurate homeopathic diagnosis. Ensure each question targets a specific symptom modality, sensation, or related condition."
-            messages = [
-                SystemMessage(content=system_prompt),
-                HumanMessage(content="Generate the follow-up questions based on the schema. CRITICAL: Output ONLY the raw tool call. Do NOT output any conversational text, preamble, or markdown blocks.")
-            ]
-            structured_llm = llm.with_structured_output(GeneratedQuestionsData)
-            result = await structured_llm.ainvoke(messages)
-            
-            return {
-                "success": True,
-                "diseaseId": disease_id or "custom",
-                "disease": disease_label[:50] + "..." if len(disease_label) > 50 else disease_label,
-                "questions": [q.model_dump() for q in result.questions],
-                "timestamp": get_pkt_now().isoformat(),
-            }
-        except Exception as e:
-            print(f"Dynamic question generation failed: {e}")
-            raise HTTPException(status_code=500, detail="Failed to generate dynamic questions.")
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                system_prompt = f"You are a homeopathic expert. The patient has reported: '{context_str}'. Generate exactly 4 highly relevant multiple-choice follow-up questions ONLY in Roman Urdu (no Hindi script, no English translations, no Arabic script Urdu) to ask the patient for an accurate homeopathic diagnosis. Ensure each question targets a specific symptom modality, sensation, or related condition. CRITICAL: Do NOT use raw newlines inside JSON strings."
+                messages = [
+                    SystemMessage(content=system_prompt),
+                    HumanMessage(content="Generate the follow-up questions based on the schema. CRITICAL: Output ONLY the raw tool call. Ensure perfect JSON syntax without unescaped characters or raw newlines.")
+                ]
+                structured_llm = llm.with_structured_output(GeneratedQuestionsData)
+                result = await structured_llm.ainvoke(messages)
+                
+                return {
+                    "success": True,
+                    "diseaseId": disease_id or "custom",
+                    "disease": disease_label[:50] + "..." if len(disease_label) > 50 else disease_label,
+                    "questions": [q.model_dump() for q in result.questions],
+                    "timestamp": get_pkt_now().isoformat(),
+                }
+            except Exception as e:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                if attempt == max_retries - 1:
+                    print(f"Dynamic question generation finally failed: {e}")
+                    raise HTTPException(status_code=500, detail="Failed to generate dynamic questions after multiple attempts. Please try again.")
     
     raise HTTPException(status_code=500, detail="LLM is not configured.")
 
@@ -87,6 +107,11 @@ async def follow_up_questions(request: FollowUpQuestionsRequest):
 @router.post("/api/consultation", response_model=ChatResponse)
 async def consultation(request: ConsultationRequest, current_user = Depends(get_current_user)):
     """Generate homeopathic recommendation from patient profile and symptoms."""
+    if current_user and getattr(current_user, "role", "patient") != "admin":
+        count = await get_daily_consultation_count(current_user.id)
+        if count >= 6:
+            raise HTTPException(status_code=403, detail="Limit reached come back after 24 hrs")
+
     if llm is None:
         raise HTTPException(
             status_code=500,
@@ -94,7 +119,8 @@ async def consultation(request: ConsultationRequest, current_user = Depends(get_
         )
 
     try:
-        request.patient.name = getattr(current_user, "name", "Unknown")
+        if not request.patient.name:
+            request.patient.name = getattr(current_user, "name", "Unknown")
         
         messages = [
             SystemMessage(content=CONSULTATION_SYSTEM_PROMPT),

@@ -1,10 +1,13 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from db.database import get_db
 from core.security import verify_password, create_access_token
 from schemas.auth import LoginRequest, LoginResponse, GoogleLoginRequest, SignupRequest
 from models.admin_person import AdminPersonDB
 import uuid
+import os
+import shutil
+from core.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -34,7 +37,46 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         "name": user.name,
         "email": user.email,
         "role": user.role,
+        "profile_image": user.profile_image,
         "is_active": user.is_active,
         "subscription_start_date": user.subscription_start_date.isoformat() if user.subscription_start_date else None,
         "subscription_end_date": user.subscription_end_date.isoformat() if user.subscription_end_date else None
     }}
+
+@router.post("/api/auth/profile-picture")
+async def upload_profile_picture(file: UploadFile = File(...), db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    # Validate file extension
+    allowed_extensions = {".jpg", ".jpeg", ".png", ".webp"}
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in allowed_extensions:
+        raise HTTPException(status_code=400, detail="Only JPG, PNG and WEBP files are allowed")
+    
+    # Generate a secure random filename
+    filename = f"{uuid.uuid4().hex}{ext}"
+    filepath = os.path.join("uploads", "avatars", filename)
+    
+    # Save the file
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Update user in DB
+    user_record = db.query(AdminPersonDB).filter(AdminPersonDB.id == current_user.id).first()
+    if not user_record:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    user_record.profile_image = f"/uploads/avatars/{filename}"
+    db.commit()
+    db.refresh(user_record)
+    
+    return {
+        "success": True,
+        "profile_image": user_record.profile_image,
+        "user": {
+            "id": user_record.id,
+            "name": user_record.name,
+            "email": user_record.email,
+            "role": user_record.role,
+            "profile_image": user_record.profile_image,
+            "is_active": user_record.is_active
+        }
+    }

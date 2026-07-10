@@ -57,6 +57,20 @@ def update_admin_user(user_id: int, user_update: AdminPersonUpdate, db: Session 
     db.refresh(db_user)
     return AdminPersonResponse.from_orm(db_user)
 
+class AdminPersonPasswordUpdate(BaseModel):
+    password: str
+
+@router.put("/api/admin/users/{user_id}/password", response_model=AdminPersonResponse)
+def update_user_password(user_id: int, payload: AdminPersonPasswordUpdate, db: Session = Depends(get_db), current_user: AdminPersonDB = Depends(require_admin)):
+    db_user = db.query(AdminPersonDB).filter(AdminPersonDB.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    db_user.password_hash = get_password_hash(payload.password)
+    db.commit()
+    db.refresh(db_user)
+    return AdminPersonResponse.from_orm(db_user)
+
 from typing import List
 
 @router.get("/api/admin/users", response_model=List[AdminPersonResponse])

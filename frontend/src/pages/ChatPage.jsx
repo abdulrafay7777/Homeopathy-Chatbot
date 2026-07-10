@@ -3,9 +3,45 @@ import IntakeWizard from '../components/chat/IntakeWizard';
 import ConsultationResult from '../components/chat/ConsultationResult';
 import Loader from '../components/common/Loader';
 import { useChat } from '../context/ChatContext';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { checkConsultationLimit } from '../services/chatService';
 
 const ChatPage = () => {
   const { phase, loadingType } = useChat();
+  const navigate = useNavigate();
+  const [checkingLimit, setCheckingLimit] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    checkConsultationLimit()
+      .then((allowed) => {
+        if (isMounted) {
+          if (!allowed) {
+             toast.error('Limit reached come back after 24 hrs');
+             navigate('/');
+          } else {
+             setCheckingLimit(false);
+          }
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          toast.error(err.message || 'Limit reached come back after 24 hrs');
+          navigate('/');
+        }
+      });
+    return () => { isMounted = false; };
+  }, [navigate]);
+
+  if (checkingLimit) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center" style={{ backgroundColor: 'var(--color-gemini-bg)' }}>
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -29,7 +65,7 @@ const ChatPage = () => {
                     backgroundClip: 'text',
                   }}
                 >
-                  Homeo AI Consultation
+                  Homeo Consultation
                 </h1>
               </div>
               <IntakeWizard />

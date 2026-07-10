@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Stethoscope, History, CreditCard, BookOpen, Settings, HelpCircle } from 'lucide-react';
+import { Stethoscope, History, CreditCard, BookOpen, Settings, HeartPulse } from 'lucide-react';
 import ChatHeader from '../components/chat/ChatHeader';
 import { useAuth } from '../context/AuthContext';
 
@@ -36,13 +36,13 @@ const DashboardPage = () => {
       path: '/history',
       color: 'from-purple-500 to-pink-500'
     },
-    // {
-    //   title: 'Plans & Pricing',
-    //   description: 'Manage your subscription and billing details',
-    //   icon: CreditCard,
-    //   path: '/subscription',
-    //   color: 'from-amber-500 to-orange-400'
-    // },
+    {
+      title: 'Plans & Pricing',
+      description: 'Manage your subscription and billing details',
+      icon: CreditCard,
+      path: '/subscription',
+      color: 'from-amber-500 to-orange-400'
+    },
     {
       title: 'Knowledge Base',
       description: 'Explore homeopathic remedies and materia medica',
@@ -58,10 +58,10 @@ const DashboardPage = () => {
       color: 'from-gray-500 to-slate-400'
     },
     {
-      title: 'Help & Support',
-      description: 'Get assistance and contact our support team',
-      icon: HelpCircle,
-      path: '/support',
+      title: 'Importance of Homoeopathic',
+      description: 'Learn why this chatbot and homoeopathy are essential for your health',
+      icon: HeartPulse,
+      path: '/importance',
       color: 'from-indigo-500 to-blue-500'
     }
   ];

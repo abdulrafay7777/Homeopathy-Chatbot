@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Key, X, Eye, EyeOff } from 'lucide-react';
 import { apiClient } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -8,6 +8,10 @@ const AllUsersTab = () => {
   const [filterRole, setFilterRole] = useState('all');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [resetModalUser, setResetModalUser] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -86,6 +90,25 @@ const AllUsersTab = () => {
       toast.success(`User consultation access ${!currentStatus ? 'enabled' : 'disabled'}`);
     } catch (error) {
       toast.error('Failed to update user status');
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setIsResetting(true);
+    try {
+      await apiClient.put(`/admin/users/${resetModalUser.id}/password`, { password: newPassword });
+      toast.success('Password updated successfully');
+      setResetModalUser(null);
+      setNewPassword('');
+    } catch (error) {
+      toast.error('Failed to update password');
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -200,6 +223,7 @@ const AllUsersTab = () => {
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Sub End</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Consultation Status</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Join Date</th>
+                <th style={{ padding: '1rem', textAlign: 'center', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -290,6 +314,28 @@ const AllUsersTab = () => {
                     <td style={{ padding: '1rem', fontSize: '14px', color: 'var(--color-gemini-text-muted)' }}>
                       {new Date(user.joinDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+                      <button
+                        onClick={() => setResetModalUser(user)}
+                        title="Reset Password"
+                        style={{
+                          background: 'rgba(139, 92, 246, 0.1)',
+                          color: 'var(--color-gemini-accent)',
+                          border: 'none',
+                          padding: '0.5rem',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'background 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)'}
+                      >
+                        <Key size={16} />
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
@@ -335,6 +381,101 @@ const AllUsersTab = () => {
           Showing <span style={{ fontWeight: '600', color: 'var(--color-gemini-text)' }}>{filteredUsers.length}</span> of <span style={{ fontWeight: '600', color: 'var(--color-gemini-text)' }}>{users.length}</span> users
         </p>
       </div>
+
+      {/* Reset Password Modal */}
+      {resetModalUser && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 50
+        }}>
+          <div style={{
+            backgroundColor: 'var(--color-gemini-surface)',
+            border: '1px solid var(--color-gemini-border)',
+            borderRadius: '16px',
+            padding: '2rem',
+            width: '90%',
+            maxWidth: '400px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-gemini-text)', margin: 0 }}>Reset Password</h3>
+              <button 
+                onClick={() => { setResetModalUser(null); setNewPassword(''); setShowPassword(false); }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--color-gemini-text-muted)', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <p style={{ fontSize: '14px', color: 'var(--color-gemini-text-muted)', marginBottom: '1.5rem' }}>
+              Enter a new password for <strong style={{ color: 'var(--color-gemini-text)' }}>{resetModalUser.name}</strong>.
+            </p>
+
+            <form onSubmit={handleResetPassword}>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--color-gemini-text-muted)', marginBottom: '0.5rem' }}>
+                  New Password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter at least 6 characters"
+                    style={{
+                      width: '100%', padding: '0.75rem', paddingRight: '2.5rem', fontSize: '14px',
+                      backgroundColor: 'var(--color-gemini-surface-2)',
+                      border: '1px solid var(--color-gemini-border)',
+                      borderRadius: '8px', color: 'var(--color-gemini-text)', outline: 'none'
+                    }}
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', color: 'var(--color-gemini-text-muted)',
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => { setResetModalUser(null); setNewPassword(''); setShowPassword(false); }}
+                  style={{
+                    padding: '0.5rem 1rem', fontSize: '14px', fontWeight: '500',
+                    backgroundColor: 'transparent', color: 'var(--color-gemini-text)',
+                    border: '1px solid var(--color-gemini-border)', borderRadius: '8px', cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isResetting}
+                  style={{
+                    padding: '0.5rem 1rem', fontSize: '14px', fontWeight: '500',
+                    backgroundColor: 'var(--color-gemini-accent)', color: 'white',
+                    border: 'none', borderRadius: '8px', cursor: isResetting ? 'not-allowed' : 'pointer',
+                    opacity: isResetting ? 0.7 : 1
+                  }}
+                >
+                  {isResetting ? 'Saving...' : 'Save Password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

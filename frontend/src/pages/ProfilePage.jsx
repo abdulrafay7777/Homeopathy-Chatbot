@@ -1,10 +1,22 @@
-import { ArrowLeft, User, Mail, Shield, Calendar, Key } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { ArrowLeft, User, Mail, Shield, Calendar, Key, Camera, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { apiClient } from '../services/api';
+import { API_BASE_URL } from '../utils/constants';
+import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+  
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const getImageUrl = (path) => {
+    if (!path) return '';
+    return `${API_BASE_URL.replace(/\/api$/, '')}${path}`;
+  };
 
   // Get user initials for avatar
   const getInitials = (name) => {
@@ -15,6 +27,42 @@ const ProfilePage = () => {
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size should be less than 5MB');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setIsUploading(true);
+      const token = localStorage.getItem('token');
+      const response = await apiClient.post('/auth/profile-picture', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.data?.success) {
+        updateUser(response.data.user);
+        toast.success('Profile picture updated!');
+      }
+    } catch (error) {
+      console.error('Upload failed', error);
+      toast.error(error.response?.data?.detail || 'Failed to upload image');
+    } finally {
+      setIsUploading(false);
+      // Reset input
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const getRoleBadgeColor = (role) => {
@@ -88,20 +136,82 @@ const ProfilePage = () => {
         }}>
           {/* Avatar Section */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', marginBottom: '2rem' }}>
-            <div style={{
-              width: '96px',
-              height: '96px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--color-gemini-accent) 0%, var(--color-gemini-accent-2) 50%, var(--color-gemini-accent-3) 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '32px',
-              fontWeight: '700',
-              color: 'white',
-              boxShadow: '0 8px 24px rgba(139, 92, 246, 0.3)'
-            }}>
-              {getInitials(user?.name)}
+            <div style={{ position: 'relative' }}>
+              <div 
+                style={{
+                  width: '96px',
+                  height: '96px',
+                  borderRadius: '50%',
+                  position: 'relative',
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  boxShadow: '0 8px 24px rgba(139, 92, 246, 0.3)',
+                  background: user?.profile_image ? 'white' : 'linear-gradient(135deg, var(--color-gemini-accent) 0%, var(--color-gemini-accent-2) 50%, var(--color-gemini-accent-3) 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '32px',
+                  fontWeight: '700',
+                  color: 'white',
+                }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  accept="image/jpeg, image/png, image/webp" 
+                  style={{ display: 'none' }} 
+                />
+                
+                {user?.profile_image ? (
+                  <img 
+                    src={getImageUrl(user.profile_image)} 
+                    alt="Profile" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                ) : (
+                  getInitials(user?.name)
+                )}
+
+                {/* Hover overlay */}
+                <div 
+                  className="opacity-0 hover:opacity-100 transition-opacity"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundColor: 'rgba(0,0,0,0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {isUploading ? <Loader2 className="animate-spin text-white" size={24} /> : <Camera className="text-white" size={24} />}
+                </div>
+              </div>
+              
+              {/* Persistent small camera icon */}
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  position: 'absolute',
+                  bottom: '0',
+                  right: '0',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--color-gemini-surface)',
+                  border: '2px solid var(--color-gemini-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  zIndex: 10
+                }}
+              >
+                <Camera size={14} style={{ color: 'var(--color-gemini-text)' }} />
+              </div>
             </div>
             
             <div style={{ flex: 1 }}>

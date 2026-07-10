@@ -194,26 +194,6 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {/* Forgot Password */}
-          <div style={{ textAlign: 'right', marginTop: '-0.5rem' }}>
-            <button
-              type="button"
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#8b5cf6',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                textDecoration: 'none'
-              }}
-              onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
-              onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
-            >
-              Forgot password?
-            </button>
-          </div>
-
           {/* Submit Button */}
           <button
             type="submit"

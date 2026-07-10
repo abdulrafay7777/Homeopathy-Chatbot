@@ -13,5 +13,7 @@ llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     api_key=GROQ_API_KEY,
     temperature=0.7,
-    max_tokens=2048
+    max_tokens=2048,
+    timeout=15,
+    max_retries=1
 ) if GROQ_API_KEY else None

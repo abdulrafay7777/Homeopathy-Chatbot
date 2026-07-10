@@ -15,5 +15,6 @@ class AdminPersonDB(Base):
     role = Column(String(50), nullable=False, default="patient")
     subscription_start_date = Column(Date, nullable=True)
     subscription_end_date = Column(Date, nullable=True)
+    profile_image = Column(String(255), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=get_pkt_now)

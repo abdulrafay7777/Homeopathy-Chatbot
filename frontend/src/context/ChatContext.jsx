@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { COMMON_DISEASES, getFollowUpByDiseaseId } from '../data/diseaseQuestions';
 import { fetchCommonDiseases, fetchFollowUpQuestions, submitConsultation as submitConsultationApi } from '../services/chatService';
+import { useAuth } from './AuthContext';
+import toast from 'react-hot-toast';
 
 const ChatContext = createContext();
 
@@ -18,9 +20,11 @@ const INITIAL_PATIENT_DATA = {
   customDiseaseDetails: '',
 };
 
-const BASE_STEP_COUNT = 4;
+const BASE_STEP_COUNT = 5;
 
 export const ChatProvider = ({ children }) => {
+  const { user } = useAuth();
+  
   const [step, setStep] = useState(0);
   const [phase, setPhase] = useState('intake');
   const [intakeMode, setIntakeMode] = useState('wizard');
@@ -131,6 +135,13 @@ export const ChatProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Failed to fetch dynamic questions:', error);
+      toast.error(error.message || 'Sawalat bananay mein masla hua. Kripya dobara koshish karen.');
+      if (error.message && error.message.includes('Limit reached')) {
+        // Do not proceed if limit is reached
+        setIsLoading(false);
+        setLoadingType(null);
+        return;
+      }
       startCustomDiseaseEntry();
     } finally {
       setIsLoading(false);
@@ -171,11 +182,11 @@ export const ChatProvider = ({ children }) => {
         setIntakeMode('wizard');
         setStep(BASE_STEP_COUNT);
       } else {
-        alert('Maaf kijiye, sawalat bananay mein masla hua. Kripya dobara koshish karen.');
+        alert('Sorry for inconvenience. Plz try again later');
       }
     } catch (error) {
       console.error(error);
-      alert('Sawalat bananay mein masla hua. Kripya dobara koshish karen.');
+      toast.error(error.message || 'Sawalat bananay mein masla hua. Kripya dobara koshish karen.');
     } finally {
       setIsLoading(false);
       setLoadingType(null);
@@ -220,8 +231,10 @@ export const ChatProvider = ({ children }) => {
       }));
       setResult(responseText);
       setPhase('result');
-    } catch {
-      setResult('Maaf kijiye, kuch technical masla hai. Kripya dobara koshish karen.');
+    } catch (error) {
+      const errorMessage = error.message || 'Maaf kijiye, kuch technical masla hai. Kripya dobara koshish karen.';
+      toast.error(errorMessage);
+      setResult(errorMessage);
       setPhase('result');
     } finally {
       setIsLoading(false);

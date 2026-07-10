@@ -1,36 +1,39 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Users } from 'lucide-react';
+import { apiClient } from '../services/api';
 
 const PlansTab = () => {
-  const [plans] = useState([
+  const [plans, setPlans] = useState([
     {
-      id: 1,
-      name: 'Basic',
-      price: '1,500',
-      prompts: 35,
-      users: 45,
-      description: 'For individual learners & beginners',
-      color: 'from-blue-500 to-cyan-500'
-    },
-    {
-      id: 2,
-      name: 'Standard',
-      price: '2,800',
-      prompts: 70,
-      users: 82,
-      description: 'For practitioners & regular users',
+      id: 'standard',
+      name: 'Standard Plan',
+      price: '5,000',
+      currency: 'Rs',
+      period: '/month',
+      prompts: '6 consultations/day',
+      users: 0, // Will be dynamically updated
+      description: 'Consult up to 6 patients daily, Full diagnosis analysis, Priority support',
       color: 'from-purple-500 to-pink-500'
-    },
-    {
-      id: 3,
-      name: 'Premium',
-      price: '4,500',
-      prompts: 110,
-      users: 27,
-      description: 'For institutions & power users',
-      color: 'from-orange-500 to-red-500'
     }
   ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await apiClient.get('/admin/dashboard-stats');
+        if (response.data && response.data.stats) {
+          const totalUsers = response.data.stats.totalUsers || 0;
+          setPlans(prev => prev.map(plan => ({
+            ...plan,
+            users: totalUsers
+          })));
+        }
+      } catch (error) {
+        console.error('Error fetching stats for plans:', error);
+      }
+    };
+    fetchStats();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto pt-4 sm:pt-8">
