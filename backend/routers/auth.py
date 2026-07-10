@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from db.database import get_db
-from core.security import verify_password, create_access_token
+from core.security import verify_password, create_access_token, get_password_hash
 from schemas.auth import LoginRequest, LoginResponse, GoogleLoginRequest, SignupRequest
 from models.admin_person import AdminPersonDB
 import uuid
@@ -13,7 +13,43 @@ router = APIRouter()
 
 @router.post("/api/auth/signup", response_model=LoginResponse)
 def signup(request: SignupRequest, db: Session = Depends(get_db)):
-    raise HTTPException(status_code=403, detail="Public signups are disabled. Please contact the administrator.")
+    # Check if user already exists
+    existing_user = db.query(AdminPersonDB).filter(AdminPersonDB.email == request.email).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
+    # Create new user
+    hashed_password = get_password_hash(request.password)
+    new_user = AdminPersonDB(
+        name=request.name,
+        email=request.email,
+        password_hash=hashed_password,
+        role=request.role or "patient"
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    # Generate token payload
+    token_data = {
+        "sub": str(new_user.id),
+        "email": new_user.email,
+        "name": new_user.name,
+        "role": new_user.role
+    }
+    
+    access_token = create_access_token(token_data)
+    
+    return {"access_token": access_token, "token_type": "bearer", "user": {
+        "id": new_user.id,
+        "name": new_user.name,
+        "email": new_user.email,
+        "role": new_user.role,
+        "profile_image": new_user.profile_image,
+        "is_active": new_user.is_active,
+        "subscription_start_date": None,
+        "subscription_end_date": None
+    }}
 
 @router.post("/api/auth/login", response_model=LoginResponse)
 def login(request: LoginRequest, db: Session = Depends(get_db)):
