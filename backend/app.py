@@ -40,10 +40,13 @@ os.makedirs("uploads/avatars", exist_ok=True)
 # Mount static files
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+origins = [url.strip() for url in frontend_url.split(",")]
+
 # Configure CORS    
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_URL")],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
