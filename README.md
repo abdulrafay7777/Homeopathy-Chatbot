@@ -9,12 +9,13 @@ A full-stack AI-powered case-taking doctor chatbot specialized in homeopathy. It
 - **Styling**: Tailwind CSS v4
 - **State Management**: Zustand
 - **Routing**: React Router DOM
-- **Charts/UI**: Recharts, Lucide React, React Markdown
+- **Charts/UI**: Recharts, Lucide React
 
 ### Backend
 - **Framework**: FastAPI (Python)
 - **AI / LLMs**: LangChain (Google GenAI, Groq)
 - **Database**: PostgreSQL (via SQLAlchemy & psycopg2)
+- **Authentication**: JWT & bcrypt
 - **Server**: Uvicorn
 
 ---
@@ -53,13 +54,12 @@ cd Chatbot
    Create a `.env` file in the `backend` directory based on your required keys:
    ```env
    GROQ_API_KEY=your_groq_api_key
+   GEMINI_API_KEY=your_gemini_api_key
    DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/patient_db
-   FIREBASE_CREDENTIALS_PATH=D:\absolute\path\to\firebase-adminsdk.json
-   JWT_SECRET_KEY=your_secure_32_byte_secret_key
+   JWT_SECRET_KEY=your_secure_key
    PORT=5000
    FRONTEND_URL=http://localhost:5173
    ```
-   *Make sure to download your Firebase Service Account key and point `FIREBASE_CREDENTIALS_PATH` to it.*
 5. Run the FastAPI server:
    ```bash
    python app.py
