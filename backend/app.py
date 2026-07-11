@@ -23,7 +23,7 @@ from routers.admin import router as admin_router
 app = FastAPI(
     title="Homeopathy AI Chatbot",
     description="Case taking doctor chatbot",
-    version="2.0.0"
+    version="1.0.0"
 )
 
 # Initialize database

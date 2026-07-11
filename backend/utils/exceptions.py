@@ -2,7 +2,7 @@ from utils.helpers import get_pkt_now
 
 def handle_llm_error(e: Exception) -> dict:
     import traceback
-    print(f"\n❌ [ERROR] LLM Error: {str(e)}")
+    print(f"\n [ERROR] LLM Error: {str(e)}")
     traceback.print_exc()
     
     error_message = str(e).lower()
