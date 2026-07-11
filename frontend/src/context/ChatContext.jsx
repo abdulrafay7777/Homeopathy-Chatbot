@@ -10,6 +10,7 @@ export const useChat = () => useContext(ChatContext);
 
 const INITIAL_PATIENT_DATA = {
   name: '',
+  phone: '',
   age: '',
   gender: '',
   maritalStatus: '',
@@ -213,17 +214,22 @@ export const ChatProvider = ({ children }) => {
     setPhase('loading');
 
     try {
-      const responseText = await submitConsultationApi({
-        name: patientData.name,
-        age: patientData.age,
-        gender: patientData.gender,
-        maritalStatus: patientData.maritalStatus,
+      const requestBody = {
+        patient: {
+          name: patientData.name,
+          phone: patientData.phone,
+          age: patientData.age,
+          gender: patientData.gender,
+          maritalStatus: patientData.maritalStatus,
+        },
         symptoms: usedCustom ? customDetails : symptoms,
         disease: patientData.disease || symptoms,
         followUpAnswers: answersList.filter((a) => a.answer),
         usedCustomDisease: usedCustom,
         customDiseaseDetails: usedCustom ? customDetails : '',
-      });
+      };
+
+      const responseText = await submitConsultationApi(requestBody);
       setPatientData((prev) => ({
         ...prev,
         usedCustomDisease: usedCustom,
