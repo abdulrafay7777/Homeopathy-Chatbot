@@ -26,6 +26,7 @@ class FollowUpAnswer(BaseModel):
 
 class PatientProfile(BaseModel):
     name: Optional[str] = Field(default="")
+    phone: Optional[str] = Field(default="")
     age: str = Field(..., min_length=1)
     gender: str = Field(..., min_length=1)
     maritalStatus: str = Field(..., min_length=1)

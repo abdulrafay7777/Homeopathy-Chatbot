@@ -12,6 +12,7 @@ class PatientDB(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
+    phone = Column(String(20), nullable=True)
     age = Column(String(20), nullable=False)
     gender = Column(String(20), nullable=False)
     marital_status = Column(String(50), nullable=False)

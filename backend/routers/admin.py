@@ -105,12 +105,13 @@ def get_admin_dashboard_stats(current_user: AdminPersonDB = Depends(require_admi
             
         # Consultations per patient for Graph
         consultations_per_patient = db.query(
+            PatientDB.id,
             PatientDB.name, 
             func.count(ConsultationHistoryDB.id).label('consultation_count')
-        ).outerjoin(ConsultationHistoryDB).group_by(PatientDB.name).all()
+        ).outerjoin(ConsultationHistoryDB).group_by(PatientDB.id, PatientDB.name).all()
         
         graph_data = [
-            {"patientName": row[0], "consultations": row[1]}
+            {"patientName": f"{row[1]} (ID: {row[0]})", "consultations": row[2]}
             for row in consultations_per_patient
         ]
         

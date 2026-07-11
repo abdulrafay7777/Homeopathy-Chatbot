@@ -10,6 +10,7 @@ def _save_consultation_sync(patient_data: dict, ai_response: dict, user_id: int 
         # Create Patient
         patient = PatientDB(
             name=patient_data.get("name", "Unknown"),
+            phone=patient_data.get("phone", ""),
             age=patient_data.get("age", ""),
             gender=patient_data.get("gender", ""),
             marital_status=patient_data.get("maritalStatus", "")
@@ -73,6 +74,7 @@ def _get_all_consultations_sync(user_id: int = None, role: str = None):
                 "created_at": c.created_at.isoformat() if c.created_at else None,
                 "patient": {
                     "name": patient.name if patient else "Unknown",
+                    "phone": patient.phone if patient else "",
                     "age": patient.age if patient else "",
                     "gender": patient.gender if patient else "",
                     "symptoms": c.symptoms,
