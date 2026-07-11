@@ -171,7 +171,11 @@ const IntakeWizard = () => {
 
   const canProceed = () => {
     if (currentBase?.type === 'text') {
-      return (textValue || currentValue || '').trim().length > 0;
+      const val = (textValue || currentValue || '').trim();
+      if (currentBase.key === 'phone') {
+        return /^\d{11}$/.test(val);
+      }
+      return val.length > 0;
     }
     if (currentBase?.type === 'disease_mcq') {
       return Boolean(patientData.diseaseId);
@@ -371,21 +375,28 @@ const IntakeWizard = () => {
         )}
 
         {currentBase?.type === 'text' && (
-          <input
-            type="text"
-            value={textValue || currentValue || ''}
-            onChange={(e) => setTextValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && canProceed() && handleNext()}
-            placeholder={currentBase.placeholder}
-            disabled={isLoading}
-            autoFocus
-            className="w-full px-5 py-4 rounded-2xl text-[16px] focus:outline-none transition-all duration-200"
-            style={{
-              backgroundColor: 'var(--color-gemini-surface)',
-              border: '1px solid var(--color-gemini-border)',
-              color: 'var(--color-gemini-text)',
-            }}
-          />
+          <div className="w-full relative">
+            <input
+              type="text"
+              value={textValue || currentValue || ''}
+              onChange={(e) => setTextValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && canProceed() && handleNext()}
+              placeholder={currentBase.placeholder}
+              disabled={isLoading}
+              autoFocus
+              className="w-full px-5 py-4 rounded-2xl text-[16px] focus:outline-none transition-all duration-200"
+              style={{
+                backgroundColor: 'var(--color-gemini-surface)',
+                border: '1px solid var(--color-gemini-border)',
+                color: 'var(--color-gemini-text)',
+              }}
+            />
+            {currentBase.key === 'phone' && (textValue || currentValue) && !/^\d{11}$/.test((textValue || currentValue).trim()) && (
+              <p className="text-red-400 text-xs mt-2 px-2 text-left w-full absolute -bottom-6">
+                Phone number must be exactly 11 digits.
+              </p>
+            )}
+          </div>
         )}
 
       </div>

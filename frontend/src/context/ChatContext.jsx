@@ -21,7 +21,7 @@ const INITIAL_PATIENT_DATA = {
   customDiseaseDetails: '',
 };
 
-const BASE_STEP_COUNT = 5;
+const BASE_STEP_COUNT = 6;
 
 export const ChatProvider = ({ children }) => {
   const { user } = useAuth();
@@ -214,22 +214,18 @@ export const ChatProvider = ({ children }) => {
     setPhase('loading');
 
     try {
-      const requestBody = {
-        patient: {
-          name: patientData.name,
-          phone: patientData.phone,
-          age: patientData.age,
-          gender: patientData.gender,
-          maritalStatus: patientData.maritalStatus,
-        },
+      const responseText = await submitConsultationApi({
+        name: patientData.name,
+        phone: patientData.phone,
+        age: patientData.age,
+        gender: patientData.gender,
+        maritalStatus: patientData.maritalStatus,
         symptoms: usedCustom ? customDetails : symptoms,
         disease: patientData.disease || symptoms,
         followUpAnswers: answersList.filter((a) => a.answer),
         usedCustomDisease: usedCustom,
         customDiseaseDetails: usedCustom ? customDetails : '',
-      };
-
-      const responseText = await submitConsultationApi(requestBody);
+      });
       setPatientData((prev) => ({
         ...prev,
         usedCustomDisease: usedCustom,

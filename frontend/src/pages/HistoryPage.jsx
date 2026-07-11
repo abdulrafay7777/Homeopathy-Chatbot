@@ -33,9 +33,10 @@ const HistoryPage = () => {
 
   const filteredHistory = history.filter(item => {
     const name = item.patient?.name?.toLowerCase() || '';
+    const phone = item.patient?.phone?.toLowerCase() || '';
     const disease = item.patient?.disease?.toLowerCase() || '';
     const search = searchTerm.toLowerCase();
-    return name.includes(search) || disease.includes(search);
+    return name.includes(search) || phone.includes(search) || disease.includes(search);
   });
 
   return (
@@ -70,7 +71,7 @@ const HistoryPage = () => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
-              placeholder="Search by patient name or disease..."
+              placeholder="Search by patient name, number, or disease..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-11 pr-4 py-3 rounded-2xl outline-none border transition-colors focus:border-[var(--color-gemini-accent)]"
