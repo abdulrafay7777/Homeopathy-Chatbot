@@ -96,7 +96,7 @@ const HistoryPage = () => {
                 <div key={item._id || idx} className="p-5 sm:p-6 rounded-3xl border transition-all hover:shadow-md" style={{ borderColor: 'var(--color-gemini-border)', backgroundColor: 'var(--color-gemini-surface)' }}>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2 border-b pb-4" style={{ borderColor: 'var(--color-gemini-border)' }}>
                     <div>
-                      <h3 className="text-xl font-semibold">{item.patient?.name} <span className="text-sm font-normal opacity-70">({item.patient?.age}, {item.patient?.gender})</span></h3>
+                      <h3 className="text-xl font-semibold">{item.patient?.name} <span className="text-sm font-normal opacity-70">({item.patient?.phone ? `${item.patient.phone}, ` : ''}{item.patient?.age}, {item.patient?.gender})</span></h3>
                       <p className="text-sm font-medium mt-1" style={{ color: 'var(--color-gemini-accent)' }}>
                         Condition: {item.patient?.disease || item.patient?.symptoms}
                       </p>
