@@ -9,6 +9,7 @@ const ConsultationResult = () => {
 
   const summaryItems = [
     { label: 'Naam', value: patientData.name },
+    { label: 'Phone', value: patientData.phone },
     { label: 'Umar', value: patientData.age },
     { label: 'Gender', value: patientData.gender },
     { label: 'Marital Status', value: patientData.maritalStatus },
