@@ -21,14 +21,14 @@ const DashboardPage = () => {
   }
 
   const menuItems = [
-    {
+    ...(user?.role !== 'admin' ? [{
       title: 'New Consultation',
       description: canConsult ? 'Start a new homeopathic case taking' : 'Consultation unavailable (Subscription inactive)',
       icon: Stethoscope,
       path: '/consultation',
       color: canConsult ? 'from-blue-500 to-cyan-400' : 'from-gray-400 to-gray-500',
       disabled: !canConsult
-    },
+    }] : []),
     {
       title: 'Patients History',
       description: 'View previous consultations and patient records',
