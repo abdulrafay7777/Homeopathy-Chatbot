@@ -51,14 +51,9 @@ const DashboardTab = () => {
   }
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: window.innerWidth < 640 ? '0' : 'initial' }}>
+    <div className="max-w-[1400px] mx-auto p-0 sm:p-[initial]">
       {/* Stats Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: window.innerWidth < 640 ? '1fr' : window.innerWidth < 1024 ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '1.5rem',
-        marginBottom: '2rem'
-      }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6 mb-8">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (

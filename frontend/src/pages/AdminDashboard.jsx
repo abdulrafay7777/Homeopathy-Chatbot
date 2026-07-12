@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, UserPlus, CreditCard, Users, LogOut, Menu, X } from 'lucide-react';
 import logo from '../assets/logo.png';
@@ -15,10 +15,23 @@ const AdminDashboard = () => {
     // Get saved tab from localStorage or default to 'dashboard'
     return localStorage.getItem('adminActiveTab') || 'dashboard';
   });
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    // Sidebar open by default only on desktop
-    return window.innerWidth >= 768;
-  });
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [sidebarOpen, setSidebarOpen] = useState(() => !isMobile);
+
+  // Add resize listener
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Save active tab to localStorage whenever it changes
   const handleTabChange = (tabId) => {
@@ -100,7 +113,7 @@ const AdminDashboard = () => {
                 onClick={() => {
                   handleTabChange(tab.id);
                   // Close sidebar on mobile after selecting a tab
-                  if (window.innerWidth < 768) {
+                  if (isMobile) {
                     setSidebarOpen(false);
                   }
                 }}
@@ -180,7 +193,7 @@ const AdminDashboard = () => {
             inset: 0,
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
             zIndex: 15,
-            display: window.innerWidth < 768 ? 'block' : 'none'
+            display: isMobile ? 'block' : 'none'
           }}
         />
       )}
@@ -191,7 +204,7 @@ const AdminDashboard = () => {
         display: 'flex', 
         flexDirection: 'column', 
         overflow: 'hidden',
-        marginLeft: window.innerWidth >= 768 && sidebarOpen ? '280px' : '0',
+        marginLeft: !isMobile && sidebarOpen ? '280px' : '0',
         transition: 'margin-left 0.3s'
       }}>
         {/* Top Bar */}
@@ -242,7 +255,7 @@ const AdminDashboard = () => {
         <main style={{
           flex: 1,
           overflow: 'auto',
-          padding: window.innerWidth < 640 ? '1rem' : '2rem',
+          padding: isMobile ? '1rem' : '2rem',
           backgroundColor: 'var(--color-gemini-bg)'
         }}>
           {renderTabContent()}

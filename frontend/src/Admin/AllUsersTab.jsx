@@ -120,9 +120,9 @@ const AllUsersTab = () => {
           All Users
         </h2>
         
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', flexDirection: window.innerWidth < 640 ? 'column' : 'row' }}>
+        <div className="flex gap-4 flex-wrap flex-col sm:flex-row w-full">
           {/* Search */}
-          <div style={{ flex: 1, minWidth: window.innerWidth < 640 ? '100%' : '300px', position: 'relative' }}>
+          <div className="flex-1 w-full sm:min-w-[300px] relative">
             <Search size={20} style={{
               position: 'absolute',
               left: '1rem',
@@ -149,7 +149,7 @@ const AllUsersTab = () => {
           </div>
 
           {/* Filter by Role */}
-          <div style={{ position: 'relative', minWidth: window.innerWidth < 640 ? '100%' : '200px' }}>
+          <div className="w-full sm:min-w-[200px] relative">
             <Filter size={20} style={{
               position: 'absolute',
               left: '1rem',
