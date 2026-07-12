@@ -51,9 +51,9 @@ const ChatPage = () => {
       <div className="flex-1 flex flex-col relative h-screen w-full overflow-hidden">
         <ChatHeader />
 
-        <div className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-8 flex flex-col items-center w-full pb-12">
+        <div className="flex-1 overflow-y-auto flex flex-col w-full">
           {phase === 'intake' && (
-            <div className="min-h-full flex flex-col items-center justify-center w-full max-w-2xl py-8">
+            <div className="flex flex-col items-center w-full max-w-2xl px-3 sm:px-4 md:px-8 py-8 pb-12 my-auto mx-auto">
               <div className="text-center mb-8 sm:mb-10 w-full">
                 <h1
                   className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight leading-tight m-0"
@@ -73,7 +73,7 @@ const ChatPage = () => {
           )}
 
           {phase === 'loading' && (
-            <div className="flex-1 flex flex-col items-center justify-center gap-4">
+            <div className="flex-1 flex flex-col items-center justify-center gap-4 px-3 sm:px-4 md:px-8 pb-12 w-full my-auto mx-auto">
               <Loader />
               <p className="text-sm" style={{ color: 'var(--color-gemini-text-muted)' }}>
                 {loadingType === 'questions'
@@ -84,7 +84,7 @@ const ChatPage = () => {
           )}
 
           {phase === 'result' && (
-            <div className="w-full max-w-3xl pt-6 sm:pt-10">
+            <div className="w-full max-w-3xl pt-6 sm:pt-10 px-3 sm:px-4 md:px-8 pb-12 mx-auto flex flex-col items-center">
               <h2
                 className="text-2xl sm:text-3xl font-medium text-center mb-8"
                 style={{
