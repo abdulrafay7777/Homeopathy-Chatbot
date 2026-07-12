@@ -216,7 +216,7 @@ const DashboardTab = () => {
           color: 'var(--color-gemini-text)',
           marginBottom: '1.5rem'
         }}>
-          Consultations per Student
+          Consultations per Doctor
         </h3>
         
         {graphData.length > 0 ? (
