@@ -70,8 +70,8 @@ const DashboardPage = () => {
     <div className="flex flex-col h-screen w-full overflow-hidden" style={{ backgroundColor: 'var(--color-gemini-bg)', color: 'var(--color-gemini-text)' }}>
       <ChatHeader />
       
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex items-center justify-center">
-        <div className="w-full max-w-6xl mx-auto">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex flex-col">
+        <div className="w-full max-w-6xl mx-auto my-auto">
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {menuItems.map((item, index) => {
