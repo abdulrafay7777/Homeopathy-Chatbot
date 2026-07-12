@@ -53,7 +53,7 @@ const ChatPage = () => {
 
         <div className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-8 flex flex-col items-center w-full pb-12">
           {phase === 'intake' && (
-            <div className="flex flex-col items-center w-full max-w-2xl py-8 my-auto">
+            <div className="min-h-full flex flex-col items-center justify-center w-full max-w-2xl py-8">
               <div className="text-center mb-8 sm:mb-10 w-full">
                 <h1
                   className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight leading-tight m-0"
