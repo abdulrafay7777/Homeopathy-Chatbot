@@ -94,40 +94,52 @@ def get_admin_dashboard_stats(current_user: AdminPersonDB = Depends(require_admi
     from db.database import SessionLocal
     db = SessionLocal()
     try:
-        from sqlalchemy import func
+        from sqlalchemy import func, or_
         from models.patient import PatientDB, ConsultationHistoryDB
+        from models.admin_person import AdminPersonDB, get_pkt_now
+        from datetime import date
         
         # Basic stats
-        total_patients = db.query(PatientDB).count()
+        total_users = db.query(AdminPersonDB).filter(AdminPersonDB.role != 'admin').count()
         total_consultations = db.query(ConsultationHistoryDB).count()
         
-        # Recent patients
-        recent_patients = db.query(PatientDB).order_by(PatientDB.created_at.desc()).limit(5).all()
+        # Recent users
+        recent_users = db.query(AdminPersonDB).filter(AdminPersonDB.role != 'admin').order_by(AdminPersonDB.created_at.desc()).limit(5).all()
         recent_users_list = []
-        for p in recent_patients:
+        for p in recent_users:
             recent_users_list.append({
                 "id": p.id,
                 "name": p.name,
-                "email": f"{p.name.lower().replace(' ', '')}@patient.local",
-                "role": "Patient",
+                "email": p.email,
+                "role": "Doctor" if p.role == "patient" else p.role,
                 "date": p.created_at.strftime("%Y-%m-%d %H:%M:%S") if p.created_at else "Unknown"
             })
             
-        # Consultations per patient for Graph
-        consultations_per_patient = db.query(
-            PatientDB.id,
-            PatientDB.name, 
+        # Consultations per doctor for Graph
+        today = get_pkt_now().date()
+        # Filter out users whose subscription has ended
+        consultations_per_doctor = db.query(
+            AdminPersonDB.id,
+            AdminPersonDB.name, 
             func.count(ConsultationHistoryDB.id).label('consultation_count')
-        ).outerjoin(ConsultationHistoryDB).group_by(PatientDB.id, PatientDB.name).all()
+        ).outerjoin(ConsultationHistoryDB, AdminPersonDB.id == ConsultationHistoryDB.admin_person_id)\
+         .filter(AdminPersonDB.role != 'admin')\
+         .filter(
+             or_(
+                 AdminPersonDB.subscription_end_date == None,
+                 AdminPersonDB.subscription_end_date >= today
+             )
+         )\
+         .group_by(AdminPersonDB.id, AdminPersonDB.name).all()
         
         graph_data = [
-            {"patientName": f"{row[1]} (ID: {row[0]})", "consultations": row[2]}
-            for row in consultations_per_patient
+            {"patientName": f"{row[1]}", "consultations": row[2]}
+            for row in consultations_per_doctor
         ]
         
         return {
             "stats": {
-                "totalUsers": total_patients,
+                "totalUsers": total_users,
                 "activeChats": total_consultations,
                 "subscriptions": 0
             },
