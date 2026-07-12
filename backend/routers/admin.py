@@ -8,6 +8,16 @@ router = APIRouter()
 
 from schemas.admin_person import AdminPersonCreate, AdminPersonResponse
 from models.admin_person import AdminPersonDB
+from core.state import state
+
+@router.get("/api/admin/system-status")
+def get_system_status(current_user: AdminPersonDB = Depends(require_admin)):
+    return {"api_exhausted": state.api_quota_exhausted}
+
+@router.post("/api/admin/clear-api-error")
+def clear_api_error(current_user: AdminPersonDB = Depends(require_admin)):
+    state.api_quota_exhausted = False
+    return {"success": True}
 
 @router.post("/api/admin/create-user", response_model=AdminPersonResponse)
 def create_admin_user(user: AdminPersonCreate, db: Session = Depends(get_db), current_user: AdminPersonDB = Depends(require_admin)):

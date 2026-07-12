@@ -13,6 +13,25 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+from contextlib import asynccontextmanager
+import asyncio
+from services.db_service import cleanup_expired_users
+
+async def periodic_cleanup():
+    while True:
+        try:
+            await cleanup_expired_users()
+        except Exception as e:
+            print(f"Error in periodic cleanup task: {e}")
+        await asyncio.sleep(86400) 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Starting background cleanup task for expired users...")
+    task = asyncio.create_task(periodic_cleanup())
+    yield
+    task.cancel()
+
 # Import routers
 from routers.health import router as health_router
 from routers.consultation import router as consultation_router
@@ -23,7 +42,8 @@ from routers.admin import router as admin_router
 app = FastAPI(
     title="Homeopathy AI Chatbot",
     description="Case taking doctor chatbot",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Initialize database
@@ -59,22 +79,6 @@ app.include_router(chat_router)
 app.include_router(admin_router)
 from routers.auth import router as auth_router
 app.include_router(auth_router)
-
-import asyncio
-from services.db_service import cleanup_expired_users
-
-async def periodic_cleanup():
-    while True:
-        try:
-            await cleanup_expired_users()
-        except Exception as e:
-            print(f"Error in periodic cleanup task: {e}")
-        await asyncio.sleep(86400) # Run every 24 hours
-
-@app.on_event("startup")
-async def startup_event():
-    print("Starting background cleanup task for expired users...")
-    asyncio.create_task(periodic_cleanup())
 
 if __name__ == "__main__":
     import uvicorn

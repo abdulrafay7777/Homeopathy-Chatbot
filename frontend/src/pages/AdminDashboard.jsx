@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, UserPlus, CreditCard, Users, LogOut, Menu, X } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { apiClient } from '../services/api';
 import logo from '../assets/logo.png';
 
 // Import tab components
@@ -31,6 +33,55 @@ const AdminDashboard = () => {
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Poll system status
+  useEffect(() => {
+    let toastId = null;
+
+    const checkSystemStatus = async () => {
+      try {
+        const response = await apiClient.get('/admin/system-status');
+        if (response.data.api_exhausted) {
+          if (!toastId) {
+            toastId = toast.error(
+              (t) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span>⚠️ LLM API Quota Exhausted. Chatbot is currently offline. Please check your API billing or update keys.</span>
+                  <button 
+                    onClick={async () => {
+                      toast.dismiss(t.id);
+                      toastId = null;
+                      try {
+                        await apiClient.post('/admin/clear-api-error');
+                      } catch (err) {
+                        console.error('Failed to clear API error', err);
+                      }
+                    }} 
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'red', fontWeight: 'bold' }}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ),
+              { duration: Infinity, id: 'api-exhausted-toast' }
+            );
+          }
+        } else {
+          if (toastId) {
+            toast.dismiss(toastId);
+            toastId = null;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check system status:', error);
+      }
+    };
+
+    checkSystemStatus();
+    const interval = setInterval(checkSystemStatus, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   // Save active tab to localStorage whenever it changes

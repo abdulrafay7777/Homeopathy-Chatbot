@@ -69,10 +69,8 @@ const ProfilePage = () => {
     switch (role?.toLowerCase()) {
       case 'admin':
         return 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
-      case 'doctor':
+      case 'patient':
         return 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)';
-      case 'student':
-        return 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
       default:
         return 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)';
     }
@@ -228,7 +226,7 @@ const ProfilePage = () => {
                   background: getRoleBadgeColor(user?.role),
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
                 }}>
-                  {user?.role || 'User'}
+                  {user?.role === 'admin' ? 'admin' : user?.role === 'patient' ? 'doctor' : user?.role || 'User'}
                 </span>
               </div>
 
@@ -307,7 +305,7 @@ const ProfilePage = () => {
                   Account Role
                 </p>
                 <p style={{ fontSize: '16px', fontWeight: '500', color: 'var(--color-gemini-text)' }}>
-                  {user?.role || 'User'}
+                  {user?.role === 'admin' ? 'admin' : user?.role === 'patient' ? 'doctor' : user?.role || 'User'}
                 </p>
               </div>
             </div>

@@ -4,6 +4,7 @@ from core.config import llm, GROQ_API_KEY
 from core.prompts import SYSTEM_PROMPT
 from utils.helpers import get_pkt_now
 from schemas.chat_schemas import ChatRequest, ChatResponse
+from core.state import state
 
 router = APIRouter()
 
@@ -93,6 +94,7 @@ async def send_message(request: ChatRequest):
             }
         elif "quota" in error_message or "rate limit" in error_message:
             print(" [ERROR] Rate limit issue detected")
+            state.api_quota_exhausted = True
             return {
                 "success": False,
                 "response": "We are experiencing high traffic right now. Please try again in a few minutes.",

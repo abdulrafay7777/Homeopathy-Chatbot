@@ -198,8 +198,8 @@ const AllUsersTab = () => {
               }}
             >
               <option value="all" style={{ padding: '0.5rem', backgroundColor: 'var(--color-gemini-surface)', color: 'var(--color-gemini-text)' }}>All Roles</option>
-              <option value="admin" style={{ padding: '0.5rem', backgroundColor: 'var(--color-gemini-surface)', color: 'var(--color-gemini-text)' }}>Doctors</option>
-              <option value="patient" style={{ padding: '0.5rem', backgroundColor: 'var(--color-gemini-surface)', color: 'var(--color-gemini-text)' }}>Students</option>
+              <option value="admin" style={{ padding: '0.5rem', backgroundColor: 'var(--color-gemini-surface)', color: 'var(--color-gemini-text)' }}>Admins</option>
+              <option value="patient" style={{ padding: '0.5rem', backgroundColor: 'var(--color-gemini-surface)', color: 'var(--color-gemini-text)' }}>Doctors</option>
             </select>
           </div>
         </div>
@@ -267,7 +267,7 @@ const AllUsersTab = () => {
                         color: roleBadge.color,
                         textTransform: 'capitalize'
                       }}>
-                        {user.role === 'admin' ? 'doctor' : user.role === 'patient' ? 'student' : user.role}
+                        {user.role === 'admin' ? 'admin' : user.role === 'patient' ? 'doctor' : user.role}
                       </span>
                     </td>
                     <td style={{ padding: '1rem', fontSize: '14px', fontWeight: '500', color: 'var(--color-gemini-text)' }}>

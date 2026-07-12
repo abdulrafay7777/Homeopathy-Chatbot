@@ -1,4 +1,5 @@
 from utils.helpers import get_pkt_now
+from core.state import state
 
 def handle_llm_error(e: Exception) -> dict:
     import traceback
@@ -9,6 +10,7 @@ def handle_llm_error(e: Exception) -> dict:
     if "api key" in error_message or "credentials" in error_message or "authentication" in error_message:
         response = "Maaf kijiye, API key ki problem hai. Administrator se contact karen."
     elif "quota" in error_message or "rate limit" in error_message:
+        state.api_quota_exhausted = True
         response = "Maaf kijiye, abhi bahut zyada requests hain. Thodi der baad try karen."
     elif "model" in error_message or "not found" in error_message:
         response = "Maaf kijiye, AI model load nahi ho pa raha. Kuch der baad try karen."

@@ -281,8 +281,8 @@ const CreateUserTab = () => {
                   e.target.style.boxShadow = 'none';
                 }}
               >
-                <option value="patient">Student</option>
-                <option value="admin">Doctor</option>
+                <option value="patient">Doctor</option>
+                <option value="admin">Admin</option>
               </select>
             </div>
           </div>

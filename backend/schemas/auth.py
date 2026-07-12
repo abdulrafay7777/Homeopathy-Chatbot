@@ -9,7 +9,7 @@ class SignupRequest(BaseModel):
     name: str
     email: str
     password: str
-    role: Optional[str] = "student"
+    role: Optional[str] = "patient"
 
 class Token(BaseModel):
     access_token: str
