@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from db.database import get_db
-from models.admin_person import AdminPersonDB
+from models.admin_person import AdminPersonDB, get_pkt_now
 from core.security import decode_access_token
 
 security = HTTPBearer()
@@ -41,8 +41,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         )
         
     if user.role != "admin":
-        from datetime import date
-        today = date.today()
+        today = get_pkt_now().date()
         if user.subscription_start_date and today < user.subscription_start_date:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
