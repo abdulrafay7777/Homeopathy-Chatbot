@@ -277,39 +277,43 @@ const AllUsersTab = () => {
                       {user.subscription_end_date ? new Date(user.subscription_end_date).toLocaleDateString() : 'N/A'}
                     </td>
                     <td style={{ padding: '1rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div 
-                          onClick={() => toggleUserStatus(user.id, user.is_active)}
-                          style={{
-                            width: '44px',
-                            height: '24px',
-                            backgroundColor: user.is_active ? '#22c55e' : '#e5e7eb',
-                            borderRadius: '9999px',
-                            position: 'relative',
-                            cursor: 'pointer',
-                            transition: 'background-color 0.2s ease'
-                          }}
-                        >
-                          <div style={{
-                            width: '20px',
-                            height: '20px',
-                            backgroundColor: 'white',
-                            borderRadius: '50%',
-                            position: 'absolute',
-                            top: '2px',
-                            left: user.is_active ? '22px' : '2px',
-                            transition: 'left 0.2s ease',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                          }} />
+                      {user.role !== 'admin' ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <div 
+                            onClick={() => toggleUserStatus(user.id, user.is_active)}
+                            style={{
+                              width: '44px',
+                              height: '24px',
+                              backgroundColor: user.is_active ? '#22c55e' : '#e5e7eb',
+                              borderRadius: '9999px',
+                              position: 'relative',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.2s ease'
+                            }}
+                          >
+                            <div style={{
+                              width: '20px',
+                              height: '20px',
+                              backgroundColor: 'white',
+                              borderRadius: '50%',
+                              position: 'absolute',
+                              top: '2px',
+                              left: user.is_active ? '22px' : '2px',
+                              transition: 'left 0.2s ease',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            }} />
+                          </div>
+                          <span style={{ 
+                            fontSize: '13px', 
+                            fontWeight: '600', 
+                            color: getDetailedStatus(user).color 
+                          }}>
+                            {getDetailedStatus(user).text}
+                          </span>
                         </div>
-                        <span style={{ 
-                          fontSize: '13px', 
-                          fontWeight: '600', 
-                          color: getDetailedStatus(user).color 
-                        }}>
-                          {getDetailedStatus(user).text}
-                        </span>
-                      </div>
+                      ) : (
+                        <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--color-gemini-text-muted)' }}>N/A</span>
+                      )}
                     </td>
                     <td style={{ padding: '1rem', fontSize: '14px', color: 'var(--color-gemini-text-muted)' }}>
                       {new Date(user.joinDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
