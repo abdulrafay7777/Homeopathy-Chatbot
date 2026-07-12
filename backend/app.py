@@ -60,6 +60,22 @@ app.include_router(admin_router)
 from routers.auth import router as auth_router
 app.include_router(auth_router)
 
+import asyncio
+from services.db_service import cleanup_expired_users
+
+async def periodic_cleanup():
+    while True:
+        try:
+            await cleanup_expired_users()
+        except Exception as e:
+            print(f"Error in periodic cleanup task: {e}")
+        await asyncio.sleep(86400) # Run every 24 hours
+
+@app.on_event("startup")
+async def startup_event():
+    print("Starting background cleanup task for expired users...")
+    asyncio.create_task(periodic_cleanup())
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 5000))
