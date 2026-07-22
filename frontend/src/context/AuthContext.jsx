@@ -8,11 +8,23 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return !!localStorage.getItem('token');
   });
-  
+
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
+
+  React.useEffect(() => {
+    const handleGlobalLogout = () => {
+      logout();
+    };
+
+    window.addEventListener('auth-logout', handleGlobalLogout);
+    
+    return () => {
+      window.removeEventListener('auth-logout', handleGlobalLogout);
+    };
+  }, []);
 
   const login = (token, userData) => {
     localStorage.setItem('token', token);
