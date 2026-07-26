@@ -94,41 +94,48 @@ const HistoryPage = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="flex flex-col gap-6">
               {filteredHistory.map((item, idx) => (
-                <div key={item._id || idx} className="p-5 sm:p-6 rounded-3xl border transition-all hover:shadow-md" style={{ borderColor: 'var(--color-gemini-border)', backgroundColor: 'var(--color-gemini-surface)' }}>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2 border-b pb-4" style={{ borderColor: 'var(--color-gemini-border)' }}>
+                <div key={item._id || idx} className="p-5 sm:p-6 rounded-3xl border transition-all hover:shadow-md flex flex-col" style={{ borderColor: 'var(--color-gemini-border)', backgroundColor: 'var(--color-gemini-surface)' }}>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                     <div>
-                      <h3 className="text-xl font-semibold">{item.patient?.name} <span className="text-sm font-normal opacity-70">({item.patient?.phone ? `${item.patient.phone}, ` : ''}{item.patient?.age}, {item.patient?.gender})</span></h3>
-                      <p className="text-sm font-medium mt-1" style={{ color: 'var(--color-gemini-accent)' }}>
+                      <h3 className="text-xl font-semibold flex flex-wrap items-center gap-2">
+                        {item.patient?.name}
+                        <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: 'var(--color-gemini-bg)', color: 'var(--color-gemini-text-muted)' }}>
+                           {item.patient?.phone ? `${item.patient.phone} • ` : ''}{item.patient?.age} • {item.patient?.gender}
+                        </span>
+                      </h3>
+                      <p className="text-sm font-medium mt-1.5" style={{ color: 'var(--color-gemini-accent)' }}>
                         Condition: {item.patient?.disease || item.patient?.symptoms}
                       </p>
                     </div>
-                    <div className="text-sm flex flex-col items-end gap-2 whitespace-nowrap" style={{ color: 'var(--color-gemini-text-muted)' }}>
-                      <div className="flex items-center gap-1.5">
-                        <Clock size={14} />
-                        {new Date(item.created_at).toLocaleString()}
-                      </div>
-                      <button
-                        onClick={() => setSelectedConsultation(item)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border cursor-pointer hover:bg-black/5"
-                        style={{ borderColor: 'var(--color-gemini-border)', color: 'var(--color-gemini-text)' }}
-                      >
-                        <Eye size={14} />
-                        View Details
-                      </button>
+                    
+                    <div className="text-sm flex items-center gap-1.5 whitespace-nowrap bg-black/5 px-3 py-1.5 rounded-full" style={{ color: 'var(--color-gemini-text-muted)' }}>
+                      <Clock size={14} />
+                      {new Date(item.created_at).toLocaleString()}
                     </div>
                   </div>
                   
-                  <div>
-                    <h4 className="text-sm font-medium mb-2" style={{ color: 'var(--color-gemini-text-muted)' }}>Prescribed Medicines:</h4>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="pt-4 border-t flex-1" style={{ borderColor: 'var(--color-gemini-border)' }}>
+                    <h4 className="text-xs font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-gemini-text-muted)' }}>Prescribed Medicines</h4>
+                    <div className="flex flex-wrap gap-2 mb-4">
                       {item.recommendation?.medicines?.map((med, i) => (
-                        <span key={i} className="px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                          {med.name} - {med.dosage}
+                        <span key={i} className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                          {med.name}
                         </span>
                       ))}
                     </div>
+                  </div>
+
+                  <div className="mt-2 flex justify-end">
+                      <button
+                        onClick={() => setSelectedConsultation(item)}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-transform hover:scale-105 cursor-pointer shadow-sm"
+                        style={{ backgroundColor: 'var(--color-gemini-accent)', color: 'white', border: 'none' }}
+                      >
+                        <Eye size={16} />
+                        View Full Details
+                      </button>
                   </div>
                 </div>
               ))}
