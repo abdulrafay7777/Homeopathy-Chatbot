@@ -4,12 +4,42 @@ const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
+const decodeJWT = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+};
+
+const isTokenValid = (token) => {
+  if (!token) return false;
+  const decoded = decodeJWT(token);
+  if (!decoded || !decoded.exp) return false;
+  return decoded.exp * 1000 > Date.now();
+};
+
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return !!localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    if (token && isTokenValid(token)) {
+      return true;
+    }
+    if (token) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+    return false;
   });
 
   const [user, setUser] = useState(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
