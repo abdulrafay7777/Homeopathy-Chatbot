@@ -44,7 +44,7 @@ IMPORTANT INSTRUCTIONS:
 2. If the patient rejected follow-up MCQs and provided their own disease description, rely primarily on that custom description.
 3. The follow-up answers contain critical diagnostic details — use them to narrow remedy selection.
 4. Suggest AT LEAST 4 specific homeopathic medicines. For each medicine, provide brief reasoning and a match percentage indicating how preferable it is for the specific disease.
-5. If any medical or lab tests are required or recommended based on the symptoms, you must recommend them.
+5. If any medical or lab tests are required or recommended based on the symptoms, you must recommend them by their specific names (e.g., recommend 'CBC', 'Lipid Profile', or 'Ultrasound Abdomen' rather than just generic terms like 'blood test' or 'scan').
 6. For medical emergencies, advise immediate professional help.
 7. Always encourage consulting a qualified homeopathic doctor.
 8. ALWAYS output your response ONLY in Roman Urdu (Urdu written in English script). Do NOT use Hindi, Devanagari, English (other than medicine names), or Arabic-script Urdu.
