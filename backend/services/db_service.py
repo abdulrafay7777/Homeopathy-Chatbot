@@ -35,7 +35,7 @@ def _save_consultation_sync(patient_data: dict, ai_response: dict, user_id: int 
             custom_disease_details=patient_data.get("customDiseaseDetails", ""),
             ai_analysis=ai_response.get("analysis", ""),
             ai_medicines=ai_medicines,
-            ai_advice=ai_response.get("advice", ""),
+            ai_advice=json.dumps(ai_response.get("recommended_tests", [])),
             admin_person_id=user_id
         )
         db.add(consultation)
@@ -68,6 +68,19 @@ def _get_all_consultations_sync(user_id: int = None, role: str = None):
                     medicines = json.loads(c.ai_medicines)
                 except:
                     pass
+            follow_ups = []
+            if c.follow_up_answers:
+                try:
+                    follow_ups = json.loads(c.follow_up_answers)
+                except:
+                    pass
+                    
+            recommended_tests = []
+            if c.ai_advice:
+                try:
+                    recommended_tests = json.loads(c.ai_advice)
+                except:
+                    pass
             
             result.append({
                 "_id": str(c.id),
@@ -77,13 +90,17 @@ def _get_all_consultations_sync(user_id: int = None, role: str = None):
                     "phone": patient.phone if patient else "",
                     "age": patient.age if patient else "",
                     "gender": patient.gender if patient else "",
+                    "maritalStatus": patient.marital_status if patient else "",
                     "symptoms": c.symptoms,
-                    "disease": c.disease
+                    "disease": c.disease,
+                    "usedCustomDisease": c.used_custom_disease,
+                    "customDiseaseDetails": c.custom_disease_details
                 },
+                "followUpAnswers": follow_ups,
                 "recommendation": {
                     "analysis": c.ai_analysis,
                     "medicines": medicines,
-                    "advice": c.ai_advice
+                    "recommended_tests": recommended_tests
                 }
             })
         return result
