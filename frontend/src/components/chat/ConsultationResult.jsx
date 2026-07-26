@@ -4,8 +4,13 @@ import ChatMessage from './ChatMessage';
 import { useChat } from '../../context/ChatContext';
 import html2pdf from 'html2pdf.js';
 
-const ConsultationResult = () => {
-  const { patientData, followUpAnswers, result, resetConsultation } = useChat();
+const ConsultationResult = ({ historicalData }) => {
+  const chatContext = useChat() || {};
+  
+  const patientData = historicalData?.patient || chatContext.patientData || {};
+  const followUpAnswers = historicalData?.followUpAnswers || chatContext.followUpAnswers || {};
+  const result = historicalData?.recommendation || chatContext.result || {};
+  const resetConsultation = chatContext.resetConsultation;
 
   const summaryItems = [
     { label: 'Naam', value: patientData.name },
@@ -15,7 +20,7 @@ const ConsultationResult = () => {
     { label: 'Marital Status', value: patientData.maritalStatus },
   ];
 
-  const followUpList = Object.values(followUpAnswers);
+  const followUpList = Array.isArray(followUpAnswers) ? followUpAnswers : Object.values(followUpAnswers);
 
   const handleDownloadPdf = () => {
     const element = document.getElementById('pdf-content');

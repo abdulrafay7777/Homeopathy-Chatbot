@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Search, Filter } from 'lucide-react';
+import { ArrowLeft, Clock, Search, Filter, Eye, X } from 'lucide-react';
 import ChatHeader from '../components/chat/ChatHeader';
 import Loader from '../components/common/Loader';
 import { apiClient } from '../services/api';
+import ConsultationResult from '../components/chat/ConsultationResult';
 
 const HistoryPage = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const HistoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedConsultation, setSelectedConsultation] = useState(null);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -102,9 +104,19 @@ const HistoryPage = () => {
                         Condition: {item.patient?.disease || item.patient?.symptoms}
                       </p>
                     </div>
-                    <div className="text-sm flex items-center gap-1.5 whitespace-nowrap" style={{ color: 'var(--color-gemini-text-muted)' }}>
-                      <Clock size={14} />
-                      {new Date(item.created_at).toLocaleString()}
+                    <div className="text-sm flex flex-col items-end gap-2 whitespace-nowrap" style={{ color: 'var(--color-gemini-text-muted)' }}>
+                      <div className="flex items-center gap-1.5">
+                        <Clock size={14} />
+                        {new Date(item.created_at).toLocaleString()}
+                      </div>
+                      <button
+                        onClick={() => setSelectedConsultation(item)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border cursor-pointer hover:bg-black/5"
+                        style={{ borderColor: 'var(--color-gemini-border)', color: 'var(--color-gemini-text)' }}
+                      >
+                        <Eye size={14} />
+                        View Details
+                      </button>
                     </div>
                   </div>
                   
@@ -124,6 +136,26 @@ const HistoryPage = () => {
           )}
         </div>
       </div>
+
+      {selectedConsultation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)' }}>
+          <div className="relative w-full max-w-4xl max-h-full overflow-hidden rounded-3xl flex flex-col shadow-2xl" style={{ backgroundColor: 'var(--color-gemini-bg)', border: '1px solid var(--color-gemini-border)' }}>
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b" style={{ borderColor: 'var(--color-gemini-border)' }}>
+              <h2 className="text-xl font-semibold">Consultation Details</h2>
+              <button 
+                onClick={() => setSelectedConsultation(null)}
+                className="p-2 rounded-full hover:bg-black/5 transition-colors cursor-pointer"
+                style={{ color: 'var(--color-gemini-text)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+              <ConsultationResult historicalData={selectedConsultation} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

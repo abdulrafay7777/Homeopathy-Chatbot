@@ -44,6 +44,13 @@ export const AuthProvider = ({ children }) => {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    setUser(null);
+  };
+
   React.useEffect(() => {
     const handleGlobalLogout = () => {
       logout();
@@ -66,13 +73,6 @@ export const AuthProvider = ({ children }) => {
   const updateUser = (userData) => {
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
-  };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setIsAuthenticated(false);
-    setUser(null);
   };
 
   return (
