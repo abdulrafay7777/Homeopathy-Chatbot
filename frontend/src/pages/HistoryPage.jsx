@@ -47,7 +47,7 @@ const HistoryPage = () => {
       
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+          <div className="flex items-center justify-between mb-12 flex-wrap gap-4">
             <div>
               <h1 className="text-3xl font-medium tracking-tight" style={{
                 background: 'linear-gradient(to right, var(--color-gemini-accent), var(--color-gemini-accent-2))',
