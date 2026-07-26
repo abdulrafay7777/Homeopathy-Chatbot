@@ -51,13 +51,7 @@ import models.patient
 import models.admin_person
 Base.metadata.create_all(bind=engine)
 
-from fastapi.staticfiles import StaticFiles
 
-# Ensure uploads directory exists
-os.makedirs("uploads/avatars", exist_ok=True)
-
-# Mount static files
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
 origins = [url.strip() for url in frontend_url.split(",")]

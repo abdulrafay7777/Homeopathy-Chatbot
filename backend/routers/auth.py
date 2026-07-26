@@ -7,6 +7,7 @@ from models.admin_person import AdminPersonDB
 import uuid
 import os
 import shutil
+import cloudinary.uploader
 from core.dependencies import get_current_user
 
 router = APIRouter()
@@ -51,20 +52,23 @@ async def upload_profile_picture(file: UploadFile = File(...), db: Session = Dep
     if ext not in allowed_extensions:
         raise HTTPException(status_code=400, detail="Only JPG, PNG and WEBP files are allowed")
     
-    # Generate a secure random filename
-    filename = f"{uuid.uuid4().hex}{ext}"
-    filepath = os.path.join("uploads", "avatars", filename)
-    
-    # Save the file
-    with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # Upload to Cloudinary
+    try:
+        upload_result = cloudinary.uploader.upload(
+            file.file, 
+            folder="avatars",
+            public_id=uuid.uuid4().hex
+        )
+        secure_url = upload_result.get("secure_url")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
     
     # Update user in DB
     user_record = db.query(AdminPersonDB).filter(AdminPersonDB.id == current_user.id).first()
     if not user_record:
         raise HTTPException(status_code=404, detail="User not found")
         
-    user_record.profile_image = f"/uploads/avatars/{filename}"
+    user_record.profile_image = secure_url
     db.commit()
     db.refresh(user_record)
     

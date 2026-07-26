@@ -13,3 +13,4 @@ PyJWT
 bcrypt
 python-multipart
 pydantic[email]
+cloudinary
