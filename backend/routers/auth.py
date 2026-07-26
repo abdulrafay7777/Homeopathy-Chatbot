@@ -8,6 +8,7 @@ import uuid
 import os
 import shutil
 import cloudinary.uploader
+import core.config
 from core.dependencies import get_current_user
 
 router = APIRouter()

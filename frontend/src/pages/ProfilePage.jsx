@@ -15,6 +15,7 @@ const ProfilePage = () => {
 
   const getImageUrl = (path) => {
     if (!path) return '';
+    if (path.startsWith('http')) return path;
     return `${API_BASE_URL.replace(/\/api$/, '')}${path}`;
   };
 

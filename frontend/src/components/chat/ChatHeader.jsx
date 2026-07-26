@@ -58,7 +58,7 @@ const ChatHeader = () => {
           <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-gemini-accent via-[#7f7cff] to-gemini-accent-3 text-white font-semibold cursor-pointer hover:scale-105 hover:shadow-lg transition-all duration-200 ring-2 ring-transparent hover:ring-gemini-accent/30 overflow-hidden">
             {user?.profile_image ? (
               <img 
-                src={`${API_BASE_URL.replace(/\/api$/, '')}${user.profile_image}`}
+                src={user.profile_image.startsWith('http') ? user.profile_image : `${API_BASE_URL.replace(/\/api$/, '')}${user.profile_image}`}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
