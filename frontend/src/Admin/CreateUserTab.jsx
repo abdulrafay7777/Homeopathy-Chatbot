@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Mail, Lock, Shield, Save, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Shield, Save, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import { apiClient } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -292,10 +292,6 @@ const CreateUserTab = () => {
                   outline: 'none',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 1rem center',
-                  backgroundSize: '16px',
                   boxSizing: 'border-box'
                 }}
                 onFocus={(e) => {
@@ -310,6 +306,14 @@ const CreateUserTab = () => {
                 <option value="patient">Doctor</option>
                 <option value="admin">Admin</option>
               </select>
+              <ChevronDown size={16} style={{
+                position: 'absolute',
+                right: '1rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--color-gemini-text-muted)',
+                pointerEvents: 'none'
+              }} />
             </div>
           </div>
 
