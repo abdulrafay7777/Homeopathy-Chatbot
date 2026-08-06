@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { User, Mail, Lock, Shield, Save } from 'lucide-react';
+import { User, Mail, Lock, Shield, Save, Eye, EyeOff } from 'lucide-react';
 import { apiClient } from '../services/api';
 import toast from 'react-hot-toast';
 
 const CreateUserTab = () => {
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -197,7 +198,7 @@ const CreateUserTab = () => {
                 pointerEvents: 'none'
               }} />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
@@ -205,7 +206,7 @@ const CreateUserTab = () => {
                 required
                 style={{
                   width: '100%',
-                  padding: '0.75rem 1rem 0.75rem 3rem',
+                  padding: '0.75rem 3rem 0.75rem 3rem',
                   fontSize: '15px',
                   border: '1px solid var(--color-gemini-border)',
                   borderRadius: '12px',
@@ -224,6 +225,31 @@ const CreateUserTab = () => {
                   e.target.style.boxShadow = 'none';
                 }}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '0.5rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--color-gemini-text-muted)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '8px',
+                  borderRadius: '50%',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-gemini-surface)'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={18} style={{ pointerEvents: 'none' }} /> : <Eye size={18} style={{ pointerEvents: 'none' }} />}
+              </button>
             </div>
           </div>
 
