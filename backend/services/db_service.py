@@ -140,42 +140,23 @@ def _cleanup_expired_users_sync():
         from models.admin_person import AdminPersonDB
         
         today = date.today()
-        # Find all expired users (non-admin)
+        # Find all expired users (non-admin) who are still active
         expired_users = db.query(AdminPersonDB).filter(
             AdminPersonDB.role != "admin",
-            AdminPersonDB.subscription_end_date < today
+            AdminPersonDB.subscription_end_date < today,
+            AdminPersonDB.is_active == True
         ).all()
         
-        deleted_count = 0
+        updated_count = 0
         for user in expired_users:
-            # 1. Get all consultations for this user
-            consultations = db.query(ConsultationHistoryDB).filter(
-                ConsultationHistoryDB.admin_person_id == user.id
-            ).all()
+            user.is_active = False
+            updated_count += 1
             
-            # Extract patient IDs associated ONLY with this admin's consultations
-            patient_ids = [c.patient_id for c in consultations if c.patient_id]
-            
-            # 2. Delete consultations
-            db.query(ConsultationHistoryDB).filter(
-                ConsultationHistoryDB.admin_person_id == user.id
-            ).delete(synchronize_session=False)
-            
-            # 3. Delete patients
-            if patient_ids:
-                db.query(PatientDB).filter(
-                    PatientDB.id.in_(patient_ids)
-                ).delete(synchronize_session=False)
-                
-            # 4. Delete the user
-            db.delete(user)
-            deleted_count += 1
-            
-        if deleted_count > 0:
+        if updated_count > 0:
             db.commit()
-            print(f"Auto-cleanup: Deleted {deleted_count} expired user(s) and their associated data.")
+            print(f"Auto-cleanup: Deactivated {updated_count} expired user(s).")
             
-        return deleted_count
+        return updated_count
     except Exception as e:
         db.rollback()
         print(f"Error cleaning up expired users: {e}")

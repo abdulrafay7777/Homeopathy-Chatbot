@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Key, X, Eye, EyeOff, ChevronDown } from 'lucide-react';
+import { Search, Filter, Key, X, Eye, EyeOff, ChevronDown, Calendar } from 'lucide-react';
 import { apiClient } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -12,6 +12,10 @@ const AllUsersTab = () => {
   const [newPassword, setNewPassword] = useState('');
   const [isResetting, setIsResetting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [editSubModalUser, setEditSubModalUser] = useState(null);
+  const [newStartDate, setNewStartDate] = useState('');
+  const [newEndDate, setNewEndDate] = useState('');
+  const [isUpdatingSub, setIsUpdatingSub] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -109,6 +113,33 @@ const AllUsersTab = () => {
       toast.error('Failed to update password');
     } finally {
       setIsResetting(false);
+    }
+  };
+
+  const handleUpdateSubscription = async (e) => {
+    e.preventDefault();
+    setIsUpdatingSub(true);
+    try {
+      const payload = {};
+      if (newStartDate) payload.subscription_start_date = newStartDate;
+      if (newEndDate) payload.subscription_end_date = newEndDate;
+      
+      const response = await apiClient.put(`/admin/users/${editSubModalUser.id}`, payload);
+      
+      setUsers(users.map(u => u.id === editSubModalUser.id ? { 
+        ...u, 
+        subscription_start_date: response.data.subscription_start_date || u.subscription_start_date,
+        subscription_end_date: response.data.subscription_end_date || u.subscription_end_date
+      } : u));
+      
+      toast.success('Subscription updated successfully');
+      setEditSubModalUser(null);
+      setNewStartDate('');
+      setNewEndDate('');
+    } catch (error) {
+      toast.error('Failed to update subscription');
+    } finally {
+      setIsUpdatingSub(false);
     }
   };
 
@@ -323,26 +354,52 @@ const AllUsersTab = () => {
                       {new Date(user.joinDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
                     <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      <button
-                        onClick={() => setResetModalUser(user)}
-                        title="Reset Password"
-                        style={{
-                          background: 'rgba(139, 92, 246, 0.1)',
-                          color: 'var(--color-gemini-accent)',
-                          border: 'none',
-                          padding: '0.5rem',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'background 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)'}
-                      >
-                        <Key size={16} />
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                        <button
+                          onClick={() => {
+                            setEditSubModalUser(user);
+                            setNewStartDate(user.subscription_start_date ? user.subscription_start_date.split('T')[0] : '');
+                            setNewEndDate(user.subscription_end_date ? user.subscription_end_date.split('T')[0] : '');
+                          }}
+                          title="Edit Subscription"
+                          style={{
+                            background: 'rgba(56, 189, 248, 0.1)',
+                            color: '#38bdf8',
+                            border: 'none',
+                            padding: '0.5rem',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'background 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(56, 189, 248, 0.2)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(56, 189, 248, 0.1)'}
+                        >
+                          <Calendar size={16} />
+                        </button>
+                        <button
+                          onClick={() => setResetModalUser(user)}
+                          title="Reset Password"
+                          style={{
+                            background: 'rgba(139, 92, 246, 0.1)',
+                            color: 'var(--color-gemini-accent)',
+                            border: 'none',
+                            padding: '0.5rem',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'background 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)'}
+                        >
+                          <Key size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -478,6 +535,102 @@ const AllUsersTab = () => {
                   }}
                 >
                   {isResetting ? 'Saving...' : 'Save Password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Subscription Modal */}
+      {editSubModalUser && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 50
+        }}>
+          <div style={{
+            backgroundColor: 'var(--color-gemini-surface)',
+            border: '1px solid var(--color-gemini-border)',
+            borderRadius: '16px',
+            padding: '2rem',
+            width: '90%',
+            maxWidth: '400px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-gemini-text)', margin: 0 }}>Update Subscription</h3>
+              <button 
+                onClick={() => { setEditSubModalUser(null); setNewStartDate(''); setNewEndDate(''); }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--color-gemini-text-muted)', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <p style={{ fontSize: '14px', color: 'var(--color-gemini-text-muted)', marginBottom: '1.5rem' }}>
+              Update subscription dates for <strong style={{ color: 'var(--color-gemini-text)' }}>{editSubModalUser.name}</strong>.
+            </p>
+
+            <form onSubmit={handleUpdateSubscription}>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--color-gemini-text-muted)', marginBottom: '0.5rem' }}>
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={newStartDate}
+                  onChange={(e) => setNewStartDate(e.target.value)}
+                  style={{
+                    width: '100%', padding: '0.75rem', fontSize: '14px',
+                    backgroundColor: 'var(--color-gemini-surface-2)',
+                    border: '1px solid var(--color-gemini-border)',
+                    borderRadius: '8px', color: 'var(--color-gemini-text)', outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--color-gemini-text-muted)', marginBottom: '0.5rem' }}>
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={newEndDate}
+                  onChange={(e) => setNewEndDate(e.target.value)}
+                  style={{
+                    width: '100%', padding: '0.75rem', fontSize: '14px',
+                    backgroundColor: 'var(--color-gemini-surface-2)',
+                    border: '1px solid var(--color-gemini-border)',
+                    borderRadius: '8px', color: 'var(--color-gemini-text)', outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => { setEditSubModalUser(null); setNewStartDate(''); setNewEndDate(''); }}
+                  style={{
+                    padding: '0.5rem 1rem', fontSize: '14px', fontWeight: '500',
+                    backgroundColor: 'transparent', color: 'var(--color-gemini-text)',
+                    border: '1px solid var(--color-gemini-border)', borderRadius: '8px', cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingSub}
+                  style={{
+                    padding: '0.5rem 1rem', fontSize: '14px', fontWeight: '500',
+                    backgroundColor: 'var(--color-gemini-accent)', color: 'white',
+                    border: 'none', borderRadius: '8px', cursor: isUpdatingSub ? 'not-allowed' : 'pointer',
+                    opacity: isUpdatingSub ? 0.7 : 1
+                  }}
+                >
+                  {isUpdatingSub ? 'Saving...' : 'Save Dates'}
                 </button>
               </div>
             </form>

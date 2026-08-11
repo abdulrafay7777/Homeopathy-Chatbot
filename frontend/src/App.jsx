@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import ChatPage from './pages/ChatPage';
+import GptChatPage from './pages/GptChatPage';
 import LoginPage from './pages/LoginPage';
 import NotFound from './pages/NotFound';
 import { useAuth } from './context/AuthContext';
@@ -36,6 +37,11 @@ function App() {
         <Route 
           path="/consultation"
           element={isAuthenticated ? <ChatPage /> : <Navigate to="/login" />} 
+        />
+
+        <Route 
+          path="/chat-consultation"
+          element={isAuthenticated ? <GptChatPage /> : <Navigate to="/login" />} 
         />
         
         <Route 

@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Stethoscope, History, CreditCard, BookOpen, Settings, HeartPulse } from 'lucide-react';
+import { Stethoscope, History, CreditCard, BookOpen, Settings, HeartPulse, X, MessageSquare, ClipboardList } from 'lucide-react';
 import ChatHeader from '../components/chat/ChatHeader';
 import { useAuth } from '../context/AuthContext';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [showConsultationModal, setShowConsultationModal] = useState(false);
 
   let canConsult = user?.is_active ?? true;
   if (canConsult && user?.role === 'patient') {
@@ -79,7 +81,15 @@ const DashboardPage = () => {
               return (
                 <div 
                   key={index}
-                  onClick={() => !item.disabled && navigate(item.path)}
+                  onClick={() => {
+                    if (!item.disabled) {
+                      if (item.path === '/consultation') {
+                        setShowConsultationModal(true);
+                      } else {
+                        navigate(item.path);
+                      }
+                    }
+                  }}
                   className={`group relative p-6 rounded-3xl transition-all duration-300 border ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-[1.02]'}`}
                   style={{ 
                     backgroundColor: 'var(--color-gemini-surface)',
@@ -103,6 +113,100 @@ const DashboardPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Consultation Type Selection Modal */}
+      {showConsultationModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 50, padding: '1rem'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--color-gemini-surface)',
+            border: '1px solid var(--color-gemini-border)',
+            borderRadius: '24px',
+            padding: '2.5rem',
+            width: '100%',
+            maxWidth: '600px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            position: 'relative',
+            animation: 'modalSlideIn 0.3s ease-out'
+          }}>
+            <button 
+              onClick={() => setShowConsultationModal(false)}
+              style={{
+                position: 'absolute', top: '1.5rem', right: '1.5rem',
+                background: 'var(--color-gemini-surface-2)',
+                border: 'none', borderRadius: '50%', width: '32px', height: '32px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--color-gemini-text-muted)', cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-gemini-text)'; e.currentTarget.style.background = 'var(--color-gemini-border)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-gemini-text-muted)'; e.currentTarget.style.background = 'var(--color-gemini-surface-2)'; }}
+            >
+              <X size={18} />
+            </button>
+            
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-gemini-text)' }}>Select Consultation Type</h2>
+              <p style={{ color: 'var(--color-gemini-text-muted)' }}>Choose how you want to conduct this case taking</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Option 1: Standard */}
+              <div 
+                onClick={() => { setShowConsultationModal(false); navigate('/consultation'); }}
+                className="group p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2"
+                style={{ 
+                  backgroundColor: 'var(--color-gemini-surface-2)', 
+                  borderColor: 'var(--color-gemini-border)'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#38bdf8'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-gemini-border)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-400 text-white shadow-md">
+                  <ClipboardList size={24} />
+                </div>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-gemini-text)' }}>Standard Form</h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-gemini-text-muted)' }}>
+                  Traditional step-by-step wizard format to gather patient details and symptoms structurally.
+                </p>
+              </div>
+
+              {/* Option 2: AI Chat */}
+              <div 
+                onClick={() => { setShowConsultationModal(false); navigate('/chat-consultation'); }}
+                className="group p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2 relative overflow-hidden"
+                style={{ 
+                  backgroundColor: 'var(--color-gemini-surface-2)', 
+                  borderColor: 'var(--color-gemini-border)'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#8b5cf6'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-gemini-border)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                  NEW
+                </div>
+                <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-md">
+                  <MessageSquare size={24} />
+                </div>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-gemini-text)' }}>AI Chat (GPT Style)</h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-gemini-text-muted)' }}>
+                  A fluid, conversational AI interface. Perfect for a more natural and interactive case taking.
+                </p>
+              </div>
+            </div>
+            <style>{`
+              @keyframes modalSlideIn {
+                from { opacity: 0; transform: translateY(20px) scale(0.95); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+              }
+            `}</style>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
