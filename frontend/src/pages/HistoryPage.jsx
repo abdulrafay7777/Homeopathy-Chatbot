@@ -149,13 +149,22 @@ const HistoryPage = () => {
           <div className="relative w-full max-w-4xl max-h-full overflow-hidden rounded-3xl flex flex-col shadow-2xl" style={{ backgroundColor: 'var(--color-gemini-bg)', border: '1px solid var(--color-gemini-border)' }}>
             <div className="flex items-center justify-between p-4 sm:p-6 border-b" style={{ borderColor: 'var(--color-gemini-border)' }}>
               <h2 className="text-xl font-semibold">Consultation Details</h2>
-              <button 
-                onClick={() => setSelectedConsultation(null)}
-                className="p-2 rounded-full hover:bg-black/5 transition-colors cursor-pointer"
-                style={{ color: 'var(--color-gemini-text)' }}
-              >
-                <X size={20} />
-              </button>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => navigate('/chat', { state: { resumeConsultation: selectedConsultation } })}
+                  className="px-4 py-2 rounded-full text-sm font-semibold transition-transform hover:scale-105 cursor-pointer shadow-sm"
+                  style={{ backgroundColor: 'var(--color-gemini-accent)', color: 'white', border: 'none' }}
+                >
+                  Continue Chat
+                </button>
+                <button 
+                  onClick={() => setSelectedConsultation(null)}
+                  className="p-2 rounded-full hover:bg-black/5 transition-colors cursor-pointer"
+                  style={{ color: 'var(--color-gemini-text)' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               <ConsultationResult historicalData={selectedConsultation} />

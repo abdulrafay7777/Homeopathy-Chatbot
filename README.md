@@ -10,13 +10,15 @@ A full-stack AI-powered case-taking doctor chatbot specialized in homeopathy. It
 - **State Management**: Zustand
 - **Routing**: React Router DOM
 - **Charts/UI**: Recharts, Lucide React
+- **Deployment**: Vercel
 
 ### Backend
 - **Framework**: FastAPI (Python)
-- **AI / LLMs**: LangChain (Google GenAI, Groq)
+- **AI / LLMs**: LangChain (Models: Google Gemini & Groq; APIs attached: Google GenAI API, Groq API)
 - **Database**: PostgreSQL (via SQLAlchemy & psycopg2)
 - **Authentication**: JWT & bcrypt
 - **Server**: Uvicorn
+- **Deployment**: Render
 
 ---
 
@@ -90,6 +92,7 @@ cd Chatbot
 
 ## Features
 - **Interactive Chat**: Conversational AI designed to act as a homeopathic practitioner for initial case taking.
-- **LLM Integrations**: Utilizes LangChain for complex query handling with models from Google (Gemini) and Groq.
+- **LLM Integrations**: Utilizes LangChain for complex query handling with models from Google (Gemini API) and Groq API.
 - **Admin/Consultation**: Routes mapped for consultations, admin dashboards, and health checks.
+- **Cloud Deployment**: Fully deployed with frontend hosted on Vercel and backend services on Render.
 

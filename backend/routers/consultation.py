@@ -9,10 +9,12 @@ from schemas.chat_schemas import (
     FollowUpQuestionsResponse,
     ConsultationRequest,
     ChatResponse,
-    ConsultationData
+    ConsultationData,
+    DietLabRequest,
+    DietLabResponse
 )
 from core.config import llm
-from core.prompts import CONSULTATION_SYSTEM_PROMPT
+from core.prompts import CONSULTATION_SYSTEM_PROMPT, DIET_LABS_SYSTEM_PROMPT
 from core.dependencies import get_current_user
 from utils.helpers import get_pkt_now, build_consultation_prompt
 from utils.exceptions import handle_llm_error
@@ -143,6 +145,30 @@ async def consultation(request: ConsultationRequest, current_user = Depends(get_
             "data": result.model_dump(),
             "timestamp": get_pkt_now().isoformat(),
         }
+    except HTTPException:
+        raise
+    except Exception as e:
+        return handle_llm_error(e)
+
+@router.post("/api/consultation/diet-labs", response_model=DietLabResponse)
+async def generate_diet_labs(request: DietLabRequest, current_user = Depends(get_current_user)):
+    """Generate nuanced diet plan and standardized lab tests."""
+    if llm is None:
+        raise HTTPException(status_code=500, detail="AI service configuration error.")
+
+    try:
+        messages = [
+            SystemMessage(content=DIET_LABS_SYSTEM_PROMPT),
+            HumanMessage(content=f"Disease/Condition: {request.disease}\n\nConsultation Summary:\n{request.consultation_summary}")
+        ]
+        
+        structured_llm = llm.with_structured_output(DietLabResponse)
+        result = await structured_llm.ainvoke(messages)
+        
+        # Ensure timestamp is set properly if LLM misses it
+        result.timestamp = get_pkt_now().isoformat()
+        
+        return result
     except HTTPException:
         raise
     except Exception as e:

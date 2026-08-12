@@ -38,16 +38,17 @@ class PatientProfile(BaseModel):
 
 class MedicineRecommendation(BaseModel):
     name: str = Field(description="Name of the homeopathic medicine (e.g., 'Belladonna')")
-    match_percentage: int = Field(description="Percentage score (e.g. 85) indicating how preferable this medicine is for the specific disease")
+    match_percentage: int = Field(description="Percentage score (e.g. 85) based on explicit criteria matching patient symptoms")
     dosage: str = Field(description="Recommended potency and dosage amount (e.g., '200C - 3 drops or 4 pills')")
     how_to_take: str = Field(description="Detailed instructions on how to take the medicine (e.g., 'Take with 1 spoon of water, 4 hours apart, empty stomach')")
-    description: str = Field(description="Indications and brief reasoning (e.g., 'Violent throbbing headache...')")
+    description: str = Field(description="Indications, brief reasoning, and clear criteria justifying the confidence score")
+    safety_warnings: Optional[str] = Field(default="", description="Explicit safety warnings when combining remedies or contraindications")
     tags: List[str] = Field(description="List of 2-3 tags (e.g., ['Grade 3 - First choice', 'Acute', 'Vascular'])")
 
 class ConsultationData(BaseModel):
     analysis: str = Field(description="Marez ko naam se address karen aur symptoms ka mukhtasar tajziya in Roman Urdu.")
     medicines: List[MedicineRecommendation] = Field(description="List of at least 4 recommended homeopathic remedies.")
-    recommended_tests: Optional[List[str]] = Field(default=[], description="List of recommended medical or lab tests if applicable (in Roman Urdu/English). Leave empty if none required.")
+    recommended_tests: Optional[List[str]] = Field(default=[], description="List of recommended medical or lab tests. MUST be standard clinical lab names (e.g., 'Ultrasound KUB', 'Urine R/E', 'CBC'). Leave empty if none required.")
 
 class FollowUpQuestionsRequest(BaseModel):
     symptoms: Optional[str] = ""
@@ -84,3 +85,13 @@ class GeneratedQuestion(BaseModel):
 
 class GeneratedQuestionsData(BaseModel):
     questions: List[GeneratedQuestion] = Field(description="List of 3-4 follow-up questions to ask the patient about their specific condition")
+
+class DietLabRequest(BaseModel):
+    consultation_summary: str = Field(..., description="The summary of the consultation to generate diet and labs for")
+    disease: str = Field(..., description="The disease or condition")
+
+class DietLabResponse(BaseModel):
+    success: bool
+    lab_tests: List[str] = Field(description="Standardized clinical lab test names")
+    diet_plan: str = Field(description="Nuanced, condition-specific diet plan in Roman Urdu")
+    timestamp: str

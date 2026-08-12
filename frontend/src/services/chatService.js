@@ -79,3 +79,33 @@ export const submitConsultation = async (patient) => {
     throw error;
   }
 };
+
+export const generateDietLabs = async (consultationSummary, disease) => {
+  try {
+    const response = await apiClient.post('/consultation/diet-labs', { consultation_summary: consultationSummary, disease });
+    if (response.data) {
+      return response.data;
+    }
+    throw new Error('Invalid response from server');
+  } catch (error) {
+    if (error.response) {
+      throw new Error(error.response.data?.detail || 'Server error occurred');
+    }
+    throw new Error('Network issue Unstable internet connection.');
+  }
+};
+
+export const continueConversation = async (message, conversationHistory) => {
+  try {
+    const response = await apiClient.post('/chat/message', { message, conversationHistory });
+    if (response.data?.success) {
+      return response.data.response;
+    }
+    throw new Error('Invalid response from server');
+  } catch (error) {
+    if (error.response) {
+      throw new Error(error.response.data?.detail || 'Server error occurred');
+    }
+    throw new Error('Network issue Unstable internet connection.');
+  }
+};

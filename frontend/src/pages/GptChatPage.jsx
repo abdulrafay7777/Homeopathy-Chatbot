@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send, User, Bot, Loader2, ArrowRight } from 'lucide-react';
 import ChatHeader from '../components/chat/ChatHeader';
-import { fetchFollowUpQuestions, submitConsultation } from '../services/chatService';
+import { fetchFollowUpQuestions, submitConsultation, generateDietLabs, continueConversation } from '../services/chatService';
 import toast from 'react-hot-toast';
 
 const GptChatPage = () => {
@@ -31,10 +31,9 @@ const GptChatPage = () => {
   const messagesEndRef = useRef(null);
 
   // Chat Flow State
-  const [chatPhase, setChatPhase] = useState('initial'); // 'initial' | 'asking_followups' | 'done'
-  const [followUpQuestions, setFollowUpQuestions] = useState([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [followUpAnswers, setFollowUpAnswers] = useState([]);
+  const [chatPhase, setChatPhase] = useState('chatting'); // 'chatting' | 'done'
+  const [consultationSummary, setConsultationSummary] = useState('');
+  const [hasGeneratedDietLabs, setHasGeneratedDietLabs] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -65,47 +64,66 @@ const GptChatPage = () => {
     setInputValue('');
     setMessages(prev => [...prev, { sender: 'user', text: userMessage }]);
     
-    if (chatPhase === 'initial') {
-      // User just entered initial symptoms
-      setPatient(prev => ({ ...prev, symptoms: userMessage }));
+    if (chatPhase === 'chatting') {
       setIsTyping(true);
+      if (!patient.symptoms) {
+        setPatient(prev => ({ ...prev, symptoms: userMessage }));
+      }
       
       try {
-        const res = await fetchFollowUpQuestions({ symptoms: userMessage });
-        const questions = res.questions || [];
-        if (questions.length === 0) {
-          // Fallback if no questions
-          await generateFinalResult(userMessage, []);
-        } else {
-          setFollowUpQuestions(questions);
-          setChatPhase('asking_followups');
-          setCurrentQuestionIndex(0);
-          setMessages(prev => [...prev, { sender: 'bot', text: questions[0] }]);
-        }
+        const history = messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text }));
+        
+        const responseText = await continueConversation(userMessage, history);
+        setMessages(prev => [...prev, { sender: 'bot', text: responseText }]);
       } catch (error) {
-        toast.error(error.message || 'Failed to analyze symptoms');
+        toast.error(error.message || 'Failed to send message');
         setMessages(prev => [...prev, { sender: 'bot', text: 'Sorry, I encountered an error. Please try again.' }]);
       } finally {
         setIsTyping(false);
       }
-    } else if (chatPhase === 'asking_followups') {
-      // Record answer
-      const currentQ = followUpQuestions[currentQuestionIndex];
-      const newAnswers = [...followUpAnswers, { question: currentQ, answer: userMessage }];
-      setFollowUpAnswers(newAnswers);
-      
-      const nextIndex = currentQuestionIndex + 1;
-      
-      if (nextIndex < followUpQuestions.length) {
-        // Ask next question
-        setCurrentQuestionIndex(nextIndex);
-        setMessages(prev => [...prev, { sender: 'bot', text: followUpQuestions[nextIndex] }]);
-      } else {
-        // Finished all questions, submit consultation
-        setIsTyping(true);
-        setChatPhase('done');
-        await generateFinalResult(patient.symptoms, newAnswers);
+    } else if (chatPhase === 'done') {
+      setIsTyping(true);
+      try {
+        const history = messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text }));
+        if (consultationSummary) {
+          history.unshift({ role: 'assistant', content: `Consultation Context:\n${consultationSummary}` });
+        }
+        
+        const responseText = await continueConversation(userMessage, history);
+        setMessages(prev => [...prev, { sender: 'bot', text: responseText }]);
+      } catch (error) {
+        toast.error('Failed to send message');
+      } finally {
+        setIsTyping(false);
       }
+    }
+  };
+
+  const handleGenerateFinal = async () => {
+    setIsTyping(true);
+    setChatPhase('done');
+    
+    // Combine all history as "symptoms" for the final consultation AI
+    const allSymptoms = messages.map(m => `${m.sender === 'user' ? 'Patient' : 'Doctor'}: ${m.text}`).join('\n');
+    await generateFinalResult(allSymptoms, []);
+  };
+
+  const handleGenerateDietLabs = async () => {
+    setIsTyping(true);
+    setHasGeneratedDietLabs(true);
+    setMessages(prev => [...prev, { sender: 'user', text: 'Please provide my customized Diet Plan and recommended Lab Tests.' }]);
+    try {
+      const result = await generateDietLabs(consultationSummary, patient.disease || patient.symptoms);
+      
+      let text = `**Recommended Lab Tests:**\n`;
+      result.lab_tests.forEach(t => text += `- ${t}\n`);
+      text += `\n**Custom Diet Plan:**\n${result.diet_plan}`;
+      
+      setMessages(prev => [...prev, { sender: 'bot', text, isRecommendation: true }]);
+    } catch (error) {
+      toast.error('Failed to generate diet and labs');
+    } finally {
+      setIsTyping(false);
     }
   };
 
@@ -127,7 +145,10 @@ const GptChatPage = () => {
       if (result.medicines && result.medicines.length > 0) {
         resultText += `**Recommended Medicines:**\n`;
         result.medicines.forEach(m => {
-          resultText += `- ${m.name} (${m.potency}): ${m.dosage}\n`;
+          resultText += `- **${m.name}**: ${m.dosage}\n`;
+          resultText += `  • *Confidence: ${m.match_percentage}%*\n`;
+          resultText += `  • *Reason: ${m.description}*\n`;
+          if (m.safety_warnings) resultText += `  • *Safety: ${m.safety_warnings}*\n`;
         });
       }
       if (result.recommended_tests && result.recommended_tests.length > 0) {
@@ -137,6 +158,7 @@ const GptChatPage = () => {
         });
       }
 
+      setConsultationSummary(resultText);
       setMessages(prev => [...prev, { sender: 'bot', text: resultText, isRecommendation: true }]);
     } catch (error) {
       toast.error(error.message || 'Failed to generate recommendation');
@@ -261,10 +283,10 @@ const GptChatPage = () => {
                       type="text" 
                       value={patient.phone} 
                       onChange={e => setPatient({...patient, phone: e.target.value})} 
-                      pattern="^(?:\+92|0)3[0-9]{2}[-\s]?[0-9]{7}$"
-                      title="Please enter a valid Pakistani phone number (e.g., 0300 1234567 or +923001234567)"
+                      pattern="^03[0-9]{9}$"
+                      title="Please enter exactly 11 digits starting with 03 (e.g. 03001234567)"
                       style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--color-gemini-border)', backgroundColor: 'var(--color-gemini-surface-2)', color: 'var(--color-gemini-text)', outline: 'none', transition: 'border-color 0.2s' }} 
-                      placeholder="03XX XXXXXXX"
+                      placeholder="03XXXXXXXXX"
                       onFocus={(e) => e.target.style.borderColor = '#a855f7'}
                       onBlur={(e) => e.target.style.borderColor = 'var(--color-gemini-border)'}
                     />
@@ -301,8 +323,9 @@ const GptChatPage = () => {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', position: 'relative' }}>
             {/* Chat Messages */}
-            <div style={{ flex: '1 1 0%', overflowY: 'auto', padding: '2rem 1rem 10rem 1rem', width: '100%', maxWidth: '1024px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2.5rem', scrollBehavior: 'smooth' }}>
-              {messages.map((msg, index) => (
+            <div style={{ flex: '1 1 0%', overflowY: 'auto', width: '100%', scrollBehavior: 'smooth' }}>
+              <div style={{ padding: '2rem 1rem 10rem 1rem', width: '100%', maxWidth: '1024px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+                {messages.map((msg, index) => (
                 <div key={index} style={{ display: 'flex', gap: '1.5rem', flexDirection: msg.sender === 'user' ? 'row-reverse' : 'row' }}>
                   {/* Avatar */}
                   <div style={{ flexShrink: 0, width: '2.5rem', height: '2.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', background: msg.sender === 'user' ? '#2563eb' : 'linear-gradient(135deg, #9333ea, #4f46e5)' }}>
@@ -328,11 +351,23 @@ const GptChatPage = () => {
                     {msg.isRecommendation ? (
                       <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.625', fontSize: '1rem' }}>
                         {formatText(msg.text)}
-                        <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-gemini-border)' }}>
-                          <button onClick={() => navigate('/')} style={{ fontSize: '0.9375rem', fontWeight: '600', color: '#a855f7', background: 'none', border: 'none', cursor: 'pointer' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-gemini-border)' }}>
+                          {!hasGeneratedDietLabs && (
+                            <button onClick={handleGenerateDietLabs} style={{ fontSize: '0.9375rem', fontWeight: '600', color: 'white', backgroundColor: '#a855f7', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(168, 85, 247, 0.4)' }}>
+                              Proceed to Diet & Labs
+                            </button>
+                          )}
+                          <button onClick={() => setChatPhase('chatting')} style={{ fontSize: '0.9375rem', fontWeight: '600', color: '#a855f7', backgroundColor: 'transparent', border: '1px solid #a855f7', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer' }}>
+                            Continue Conversation
+                          </button>
+                          <button onClick={() => navigate('/')} style={{ fontSize: '0.9375rem', fontWeight: '600', color: 'var(--color-gemini-text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem 1rem' }}>
                             &larr; Return to Dashboard
                           </button>
                         </div>
+                      </div>
+                    ) : msg.isDietLabs ? (
+                      <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.625', fontSize: '1rem' }}>
+                        {formatText(msg.text)}
                       </div>
                     ) : (
                       <p style={{ whiteSpace: 'pre-wrap', lineHeight: '1.625', margin: 0, fontSize: '1rem' }}>{msg.text}</p>
@@ -348,11 +383,12 @@ const GptChatPage = () => {
                   </div>
                   <div style={{ borderRadius: '1.5rem', borderTopLeftRadius: '0.125rem', padding: '1.25rem 1.5rem', border: '1px solid var(--color-gemini-border)', display: 'flex', alignItems: 'center', gap: '0.75rem', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', backgroundColor: 'var(--color-gemini-surface)' }}>
                     <Loader2 size={18} className="animate-spin text-purple-500" />
-                    <span style={{ fontSize: '0.9375rem', fontStyle: 'italic', fontWeight: '500', color: 'var(--color-gemini-text-muted)' }}>AI is thinking...</span>
+                    <span style={{ fontSize: '0.9375rem', fontStyle: 'italic', fontWeight: '500', color: 'var(--color-gemini-text-muted)' }}>Doctot is thinking...</span>
                   </div>
                 </div>
               )}
-              <div ref={messagesEndRef} style={{ height: '1rem' }} />
+                <div ref={messagesEndRef} style={{ height: '1rem' }} />
+              </div>
             </div>
 
             {/* Gradient Fade to prevent text from hitting the bottom harshly */}
@@ -381,6 +417,31 @@ const GptChatPage = () => {
                 {/* Input area */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem', backgroundColor: 'transparent' }}>
                   
+                  {chatPhase === 'chatting' && messages.length > 2 && (
+                    <button
+                      onClick={handleGenerateFinal}
+                      disabled={isTyping}
+                      style={{
+                        padding: '0.75rem 1rem',
+                        borderRadius: '0.75rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        color: 'white',
+                        backgroundColor: '#10b981',
+                        border: 'none',
+                        cursor: isTyping ? 'not-allowed' : 'pointer',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.3)',
+                        transition: 'all 0.2s',
+                        opacity: isTyping ? 0.6 : 1
+                      }}
+                      onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.transform = 'translateY(-2px)')}
+                      onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.transform = 'translateY(0)')}
+                    >
+                      Generate Diagnosis
+                    </button>
+                  )}
+
                   <input 
                     type="text" 
                     value={inputValue}
