@@ -34,7 +34,16 @@ const CreateUserTab = () => {
     }
     
     try {
-      const response = await apiClient.post('/admin/create-user', formData);
+      const payload = { ...formData };
+      if (payload.role === 'admin') {
+        payload.subscription_start_date = null;
+        payload.subscription_end_date = null;
+      } else {
+        if (!payload.subscription_start_date) payload.subscription_start_date = null;
+        if (!payload.subscription_end_date) payload.subscription_end_date = null;
+      }
+
+      const response = await apiClient.post('/admin/create-user', payload);
       toast.success('User created successfully!');
       setFormData({ name: '', email: '', password: '', role: 'patient', subscription_start_date: '', subscription_end_date: '' });
     } catch (error) {
@@ -318,67 +327,69 @@ const CreateUserTab = () => {
           </div>
 
           {/* Subscription Dates */}
-          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 640 ? '1fr' : '1fr 1fr', gap: '1rem', width: '100%' }}>
-            <div style={{ width: '100%' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: 'var(--color-gemini-text)',
-                marginBottom: '0.5rem'
-              }}>
-                Subscription Start Date
-              </label>
-              <input
-                type="date"
-                name="subscription_start_date"
-                value={formData.subscription_start_date}
-                onChange={handleChange}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1rem',
-                  fontSize: '15px',
-                  border: '1px solid var(--color-gemini-border)',
-                  borderRadius: '12px',
-                  backgroundColor: 'var(--color-gemini-surface-2)',
+          {formData.role !== 'admin' && (
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 640 ? '1fr' : '1fr 1fr', gap: '1rem', width: '100%' }}>
+              <div style={{ width: '100%' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
                   color: 'var(--color-gemini-text)',
-                  outline: 'none',
-                  transition: 'all 0.2s',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
-            
-            <div style={{ width: '100%' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: 'var(--color-gemini-text)',
-                marginBottom: '0.5rem'
-              }}>
-                Subscription End Date
-              </label>
-              <input
-                type="date"
-                name="subscription_end_date"
-                value={formData.subscription_end_date}
-                onChange={handleChange}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1rem',
-                  fontSize: '15px',
-                  border: '1px solid var(--color-gemini-border)',
-                  borderRadius: '12px',
-                  backgroundColor: 'var(--color-gemini-surface-2)',
+                  marginBottom: '0.5rem'
+                }}>
+                  Subscription Start Date
+                </label>
+                <input
+                  type="date"
+                  name="subscription_start_date"
+                  value={formData.subscription_start_date}
+                  onChange={handleChange}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    fontSize: '15px',
+                    border: '1px solid var(--color-gemini-border)',
+                    borderRadius: '12px',
+                    backgroundColor: 'var(--color-gemini-surface-2)',
+                    color: 'var(--color-gemini-text)',
+                    outline: 'none',
+                    transition: 'all 0.2s',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+              
+              <div style={{ width: '100%' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
                   color: 'var(--color-gemini-text)',
-                  outline: 'none',
-                  transition: 'all 0.2s',
-                  boxSizing: 'border-box'
-                }}
-              />
+                  marginBottom: '0.5rem'
+                }}>
+                  Subscription End Date
+                </label>
+                <input
+                  type="date"
+                  name="subscription_end_date"
+                  value={formData.subscription_end_date}
+                  onChange={handleChange}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    fontSize: '15px',
+                    border: '1px solid var(--color-gemini-border)',
+                    borderRadius: '12px',
+                    backgroundColor: 'var(--color-gemini-surface-2)',
+                    color: 'var(--color-gemini-text)',
+                    outline: 'none',
+                    transition: 'all 0.2s',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Submit Button */}
           <button
