@@ -169,7 +169,7 @@ const DashboardPage = () => {
                 <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-400 text-white shadow-md">
                   <ClipboardList size={24} />
                 </div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-gemini-text)' }}>Standard Form</h3>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-gemini-text)' }}>Beginner</h3>
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--color-gemini-text-muted)' }}>
                   Traditional step-by-step wizard format to gather patient details and symptoms structurally.
                 </p>
@@ -192,7 +192,7 @@ const DashboardPage = () => {
                 <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-md">
                   <MessageSquare size={24} />
                 </div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-gemini-text)' }}>AI Chat (GPT Style)</h3>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-gemini-text)' }}>Premium</h3>
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--color-gemini-text-muted)' }}>
                   A fluid, conversational AI interface. Perfect for a more natural and interactive case taking.
                 </p>
