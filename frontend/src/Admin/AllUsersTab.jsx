@@ -259,6 +259,7 @@ const AllUsersTab = () => {
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>User</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Email</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Role</th>
+                <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Model Access</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Sub Start</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Sub End</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--color-gemini-text)' }}>Consultation Status</th>
@@ -309,6 +310,23 @@ const AllUsersTab = () => {
                       }}>
                         {user.role === 'admin' ? 'admin' : user.role === 'patient' ? 'doctor' : user.role}
                       </span>
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      {user.role !== 'admin' ? (
+                        <span style={{
+                          padding: '0.375rem 0.75rem',
+                          borderRadius: '9999px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          backgroundColor: user.model_access === 'premium' ? 'rgba(139, 92, 246, 0.1)' : user.model_access === 'beginner' ? 'rgba(56, 189, 248, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                          color: user.model_access === 'premium' ? '#8b5cf6' : user.model_access === 'beginner' ? '#38bdf8' : '#22c55e',
+                          textTransform: 'capitalize'
+                        }}>
+                          {user.model_access || 'both'}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--color-gemini-text-muted)' }}>N/A</span>
+                      )}
                     </td>
                     <td style={{ padding: '1rem', fontSize: '14px', fontWeight: '500', color: 'var(--color-gemini-text)' }}>
                       {user.subscription_start_date ? new Date(user.subscription_start_date).toLocaleDateString() : 'N/A'}
