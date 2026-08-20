@@ -11,7 +11,8 @@ const CreateUserTab = () => {
     password: '',
     role: 'patient',
     subscription_start_date: '',
-    subscription_end_date: ''
+    subscription_end_date: '',
+    model_access: 'both'
   });
 
   const handleChange = (e) => {
@@ -32,6 +33,17 @@ const CreateUserTab = () => {
     if (formData.password.length < 6) {
       return toast.error('Password must be at least 6 characters long');
     }
+    if (formData.role !== 'admin') {
+      if (!formData.subscription_start_date) {
+        return toast.error('Subscription Start Date is required');
+      }
+      if (!formData.subscription_end_date) {
+        return toast.error('Subscription End Date is required');
+      }
+      if (new Date(formData.subscription_start_date) > new Date(formData.subscription_end_date)) {
+        return toast.error('Start Date cannot be after End Date');
+      }
+    }
     
     try {
       const payload = { ...formData };
@@ -45,7 +57,7 @@ const CreateUserTab = () => {
 
       const response = await apiClient.post('/admin/create-user', payload);
       toast.success('User created successfully!');
-      setFormData({ name: '', email: '', password: '', role: 'patient', subscription_start_date: '', subscription_end_date: '' });
+      setFormData({ name: '', email: '', password: '', role: 'patient', subscription_start_date: '', subscription_end_date: '', model_access: 'both' });
     } catch (error) {
       console.error('Error creating user:', error);
       // Handle Pydantic validation errors nicely
@@ -326,6 +338,73 @@ const CreateUserTab = () => {
             </div>
           </div>
 
+          {/* Model Access */}
+          {formData.role !== 'admin' && (
+            <div style={{ width: '100%' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'var(--color-gemini-text)',
+                marginBottom: '0.5rem'
+              }}>
+                Model Access
+              </label>
+              <div style={{ position: 'relative', width: '100%' }}>
+                <Shield size={20} style={{
+                  position: 'absolute',
+                  left: '1rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--color-gemini-text-muted)',
+                  pointerEvents: 'none',
+                  zIndex: 1
+                }} />
+                <select
+                  name="model_access"
+                  value={formData.model_access}
+                  onChange={handleChange}
+                  required
+                  style={{
+                    appearance: 'none',
+                    width: '100%',
+                    padding: '0.75rem 2.5rem 0.75rem 3rem',
+                    fontSize: '15px',
+                    fontWeight: '500',
+                    border: '2px solid var(--color-gemini-border)',
+                    borderRadius: '12px',
+                    backgroundColor: 'var(--color-gemini-surface-2)',
+                    color: 'var(--color-gemini-text)',
+                    outline: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    boxSizing: 'border-box'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'var(--color-gemini-accent)';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'var(--color-gemini-border)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  <option value="both">Both Models</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="premium">Premium</option>
+                </select>
+                <ChevronDown size={16} style={{
+                  position: 'absolute',
+                  right: '1rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--color-gemini-text-muted)',
+                  pointerEvents: 'none'
+                }} />
+              </div>
+            </div>
+          )}
+
           {/* Subscription Dates */}
           {formData.role !== 'admin' && (
             <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 640 ? '1fr' : '1fr 1fr', gap: '1rem', width: '100%' }}>
@@ -344,6 +423,7 @@ const CreateUserTab = () => {
                   name="subscription_start_date"
                   value={formData.subscription_start_date}
                   onChange={handleChange}
+                  required
                   style={{
                     width: '100%',
                     padding: '0.75rem 1rem',
@@ -374,6 +454,7 @@ const CreateUserTab = () => {
                   name="subscription_end_date"
                   value={formData.subscription_end_date}
                   onChange={handleChange}
+                  required
                   style={{
                     width: '100%',
                     padding: '0.75rem 1rem',

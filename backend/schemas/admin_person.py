@@ -9,6 +9,7 @@ class AdminPersonCreate(BaseModel):
     role: str = Field(..., pattern="^(patient|admin)$", description="Role must be patient or admin")
     subscription_start_date: Optional[date] = None
     subscription_end_date: Optional[date] = None
+    model_access: str = Field(default="both", description="Model access: beginner, premium, or both")
     is_active: bool = True
 
 class AdminPersonResponse(BaseModel):
@@ -18,6 +19,7 @@ class AdminPersonResponse(BaseModel):
     role: str
     subscription_start_date: Optional[date]
     subscription_end_date: Optional[date]
+    model_access: str
     is_active: bool
     created_at: str
 
@@ -32,6 +34,7 @@ class AdminPersonResponse(BaseModel):
             role=obj.role,
             subscription_start_date=obj.subscription_start_date,
             subscription_end_date=obj.subscription_end_date,
+            model_access=getattr(obj, "model_access", "both"),
             is_active=obj.is_active,
             created_at=obj.created_at.strftime("%Y-%m-%d") if obj.created_at else "Unknown"
         )

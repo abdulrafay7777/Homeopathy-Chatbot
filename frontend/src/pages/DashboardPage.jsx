@@ -156,47 +156,51 @@ const DashboardPage = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Option 1: Standard */}
-              <div 
-                onClick={() => { setShowConsultationModal(false); navigate('/consultation'); }}
-                className="group p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2"
-                style={{ 
-                  backgroundColor: 'var(--color-gemini-surface-2)', 
-                  borderColor: 'var(--color-gemini-border)'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#38bdf8'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-gemini-border)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-              >
-                <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-400 text-white shadow-md">
-                  <ClipboardList size={24} />
+              {(user?.model_access === 'beginner' || user?.model_access === 'both' || !user?.model_access) && (
+                <div 
+                  onClick={() => { setShowConsultationModal(false); navigate('/consultation'); }}
+                  className="group p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2"
+                  style={{ 
+                    backgroundColor: 'var(--color-gemini-surface-2)', 
+                    borderColor: 'var(--color-gemini-border)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#38bdf8'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-gemini-border)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                  <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-400 text-white shadow-md">
+                    <ClipboardList size={24} />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-gemini-text)' }}>Beginner</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--color-gemini-text-muted)' }}>
+                    Traditional step-by-step wizard format to gather patient details and symptoms structurally.
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-gemini-text)' }}>Beginner</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-gemini-text-muted)' }}>
-                  Traditional step-by-step wizard format to gather patient details and symptoms structurally.
-                </p>
-              </div>
+              )}
 
               {/* Option 2: AI Chat */}
-              <div 
-                onClick={() => { setShowConsultationModal(false); navigate('/chat-consultation'); }}
-                className="group p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2 relative overflow-hidden"
-                style={{ 
-                  backgroundColor: 'var(--color-gemini-surface-2)', 
-                  borderColor: 'var(--color-gemini-border)'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#8b5cf6'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-gemini-border)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-              >
-                <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">
-                  NEW
+              {(user?.model_access === 'premium' || user?.model_access === 'both' || !user?.model_access) && (
+                <div 
+                  onClick={() => { setShowConsultationModal(false); navigate('/chat-consultation'); }}
+                  className="group p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2 relative overflow-hidden"
+                  style={{ 
+                    backgroundColor: 'var(--color-gemini-surface-2)', 
+                    borderColor: 'var(--color-gemini-border)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#8b5cf6'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-gemini-border)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                  <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                    NEW
+                  </div>
+                  <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-md">
+                    <MessageSquare size={24} />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-gemini-text)' }}>Premium</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--color-gemini-text-muted)' }}>
+                    A fluid, conversational AI interface. Perfect for a more natural and interactive case taking.
+                  </p>
                 </div>
-                <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-md">
-                  <MessageSquare size={24} />
-                </div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-gemini-text)' }}>Premium</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-gemini-text-muted)' }}>
-                  A fluid, conversational AI interface. Perfect for a more natural and interactive case taking.
-                </p>
-              </div>
+              )}
             </div>
             <style>{`
               @keyframes modalSlideIn {

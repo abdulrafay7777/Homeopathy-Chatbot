@@ -41,6 +41,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         "role": user.role,
         "profile_image": user.profile_image,
         "is_active": user.is_active,
+        "model_access": getattr(user, "model_access", "both"),
         "subscription_start_date": user.subscription_start_date.isoformat() if user.subscription_start_date else None,
         "subscription_end_date": user.subscription_end_date.isoformat() if user.subscription_end_date else None
     }}
@@ -82,6 +83,7 @@ async def upload_profile_picture(file: UploadFile = File(...), db: Session = Dep
             "email": user_record.email,
             "role": user_record.role,
             "profile_image": user_record.profile_image,
-            "is_active": user_record.is_active
+            "is_active": user_record.is_active,
+            "model_access": getattr(user_record, "model_access", "both")
         }
     }

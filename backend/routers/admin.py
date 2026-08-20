@@ -25,6 +25,12 @@ def create_admin_user(user: AdminPersonCreate, db: Session = Depends(get_db), cu
     existing_user = db.query(AdminPersonDB).filter(AdminPersonDB.email == user.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
+        
+    if user.role != 'admin':
+        if not user.subscription_start_date or not user.subscription_end_date:
+            raise HTTPException(status_code=400, detail="Subscription start and end dates are required for doctors")
+        if user.subscription_start_date > user.subscription_end_date:
+            raise HTTPException(status_code=400, detail="Start date cannot be after end date")
     
     hashed_password = get_password_hash(user.password)
     db_user = AdminPersonDB(
@@ -34,6 +40,7 @@ def create_admin_user(user: AdminPersonCreate, db: Session = Depends(get_db), cu
         role=user.role,
         subscription_start_date=user.subscription_start_date,
         subscription_end_date=user.subscription_end_date,
+        model_access=user.model_access,
         is_active=user.is_active
     )
     db.add(db_user)
@@ -49,6 +56,7 @@ class AdminPersonUpdate(BaseModel):
     is_active: Optional[bool] = None
     subscription_start_date: Optional[date] = None
     subscription_end_date: Optional[date] = None
+    model_access: Optional[str] = None
 
 @router.put("/api/admin/users/{user_id}", response_model=AdminPersonResponse)
 def update_admin_user(user_id: int, user_update: AdminPersonUpdate, db: Session = Depends(get_db), current_user: AdminPersonDB = Depends(require_admin)):
@@ -62,6 +70,8 @@ def update_admin_user(user_id: int, user_update: AdminPersonUpdate, db: Session 
         db_user.subscription_start_date = user_update.subscription_start_date
     if user_update.subscription_end_date is not None:
         db_user.subscription_end_date = user_update.subscription_end_date
+    if user_update.model_access is not None:
+        db_user.model_access = user_update.model_access
         
     db.commit()
     db.refresh(db_user)

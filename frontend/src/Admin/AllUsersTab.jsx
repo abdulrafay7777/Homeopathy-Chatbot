@@ -15,6 +15,7 @@ const AllUsersTab = () => {
   const [editSubModalUser, setEditSubModalUser] = useState(null);
   const [newStartDate, setNewStartDate] = useState('');
   const [newEndDate, setNewEndDate] = useState('');
+  const [newModelAccess, setNewModelAccess] = useState('both');
   const [isUpdatingSub, setIsUpdatingSub] = useState(false);
 
   useEffect(() => {
@@ -28,6 +29,7 @@ const AllUsersTab = () => {
           role: user.role,
           subscription_start_date: user.subscription_start_date,
           subscription_end_date: user.subscription_end_date,
+          model_access: user.model_access,
           is_active: user.is_active,
           joinDate: user.created_at
         }));
@@ -123,21 +125,24 @@ const AllUsersTab = () => {
       const payload = {};
       if (newStartDate) payload.subscription_start_date = newStartDate;
       if (newEndDate) payload.subscription_end_date = newEndDate;
+      if (newModelAccess) payload.model_access = newModelAccess;
       
       const response = await apiClient.put(`/admin/users/${editSubModalUser.id}`, payload);
       
       setUsers(users.map(u => u.id === editSubModalUser.id ? { 
         ...u, 
         subscription_start_date: response.data.subscription_start_date || u.subscription_start_date,
-        subscription_end_date: response.data.subscription_end_date || u.subscription_end_date
+        subscription_end_date: response.data.subscription_end_date || u.subscription_end_date,
+        model_access: response.data.model_access || u.model_access
       } : u));
       
-      toast.success('Subscription updated successfully');
+      toast.success('User info updated successfully');
       setEditSubModalUser(null);
       setNewStartDate('');
       setNewEndDate('');
+      setNewModelAccess('both');
     } catch (error) {
-      toast.error('Failed to update subscription');
+      toast.error('Failed to update user info');
     } finally {
       setIsUpdatingSub(false);
     }
@@ -360,8 +365,9 @@ const AllUsersTab = () => {
                             setEditSubModalUser(user);
                             setNewStartDate(user.subscription_start_date ? user.subscription_start_date.split('T')[0] : '');
                             setNewEndDate(user.subscription_end_date ? user.subscription_end_date.split('T')[0] : '');
+                            setNewModelAccess(user.model_access || 'both');
                           }}
-                          title="Edit Subscription"
+                          title="Edit Info"
                           style={{
                             background: 'rgba(56, 189, 248, 0.1)',
                             color: '#38bdf8',
@@ -560,9 +566,9 @@ const AllUsersTab = () => {
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-gemini-text)', margin: 0 }}>Update Subscription</h3>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-gemini-text)', margin: 0 }}>Update User Info</h3>
               <button 
-                onClick={() => { setEditSubModalUser(null); setNewStartDate(''); setNewEndDate(''); }}
+                onClick={() => { setEditSubModalUser(null); setNewStartDate(''); setNewEndDate(''); setNewModelAccess('both'); }}
                 style={{ background: 'transparent', border: 'none', color: 'var(--color-gemini-text-muted)', cursor: 'pointer' }}
               >
                 <X size={20} />
@@ -570,7 +576,7 @@ const AllUsersTab = () => {
             </div>
             
             <p style={{ fontSize: '14px', color: 'var(--color-gemini-text-muted)', marginBottom: '1.5rem' }}>
-              Update subscription dates for <strong style={{ color: 'var(--color-gemini-text)' }}>{editSubModalUser.name}</strong>.
+              Update details for <strong style={{ color: 'var(--color-gemini-text)' }}>{editSubModalUser.name}</strong>.
             </p>
 
             <form onSubmit={handleUpdateSubscription}>
@@ -608,10 +614,31 @@ const AllUsersTab = () => {
                 />
               </div>
 
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--color-gemini-text-muted)', marginBottom: '0.5rem' }}>
+                  Model Access
+                </label>
+                <select
+                  value={newModelAccess}
+                  onChange={(e) => setNewModelAccess(e.target.value)}
+                  style={{
+                    width: '100%', padding: '0.75rem', fontSize: '14px',
+                    backgroundColor: 'var(--color-gemini-surface-2)',
+                    border: '1px solid var(--color-gemini-border)',
+                    borderRadius: '8px', color: 'var(--color-gemini-text)', outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="both">Both Models</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="premium">Premium</option>
+                </select>
+              </div>
+
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                 <button
                   type="button"
-                  onClick={() => { setEditSubModalUser(null); setNewStartDate(''); setNewEndDate(''); }}
+                  onClick={() => { setEditSubModalUser(null); setNewStartDate(''); setNewEndDate(''); setNewModelAccess('both'); }}
                   style={{
                     padding: '0.5rem 1rem', fontSize: '14px', fontWeight: '500',
                     backgroundColor: 'transparent', color: 'var(--color-gemini-text)',
@@ -630,7 +657,7 @@ const AllUsersTab = () => {
                     opacity: isUpdatingSub ? 0.7 : 1
                   }}
                 >
-                  {isUpdatingSub ? 'Saving...' : 'Save Dates'}
+                  {isUpdatingSub ? 'Saving...' : 'Save Info'}
                 </button>
               </div>
             </form>
