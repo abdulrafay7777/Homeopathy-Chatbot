@@ -4,10 +4,12 @@ import { ArrowLeft, Clock, Search, Filter, Eye, X } from 'lucide-react';
 import ChatHeader from '../components/chat/ChatHeader';
 import Loader from '../components/common/Loader';
 import { apiClient } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import ConsultationResult from '../components/chat/ConsultationResult';
 
 const HistoryPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -150,13 +152,15 @@ const HistoryPage = () => {
             <div className="flex items-center justify-between p-4 sm:p-6 border-b" style={{ borderColor: 'var(--color-gemini-border)' }}>
               <h2 className="text-xl font-semibold">Consultation Details</h2>
               <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => navigate('/chat', { state: { resumeConsultation: selectedConsultation } })}
-                  className="px-4 py-2 rounded-full text-sm font-semibold transition-transform hover:scale-105 cursor-pointer shadow-sm"
-                  style={{ backgroundColor: 'var(--color-gemini-accent)', color: 'white', border: 'none' }}
-                >
-                  Continue Chat
-                </button>
+                {user?.model_access !== 'beginner' && (
+                  <button 
+                    onClick={() => navigate('/chat-consultation', { state: { resumeConsultation: selectedConsultation } })}
+                    className="px-4 py-2 rounded-full text-sm font-semibold transition-transform hover:scale-105 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: 'var(--color-gemini-accent)', color: 'white', border: 'none' }}
+                  >
+                    Continue Chat
+                  </button>
+                )}
                 <button 
                   onClick={() => setSelectedConsultation(null)}
                   className="p-2 rounded-full hover:bg-black/5 transition-colors cursor-pointer"

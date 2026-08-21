@@ -1,12 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Send, User, Bot, Loader2, ArrowRight } from 'lucide-react';
 import ChatHeader from '../components/chat/ChatHeader';
 import { fetchFollowUpQuestions, submitConsultation, generateDietLabs, continueConversation } from '../services/chatService';
+import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const GptChatPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+  const isBeginner = user?.model_access === 'beginner';
   
   // App states: 'demographics' | 'chat'
   const [appState, setAppState] = useState('demographics');
@@ -44,6 +48,27 @@ const GptChatPage = () => {
       scrollToBottom();
     }
   }, [messages, isTyping, appState]);
+
+  useEffect(() => {
+    if (location.state?.resumeConsultation) {
+      const data = location.state.resumeConsultation;
+      setPatient(data.patient || {});
+      setAppState('chat');
+      setChatPhase('done');
+      
+      const reconstructedMessages = [
+        { sender: 'bot', text: `Hello ${data.patient?.name}! I am your AI Homeopathic Assistant.` },
+        { sender: 'user', text: data.patient?.symptoms || 'I need a consultation.' }
+      ];
+      if (data.recommendation?.analysis) {
+        reconstructedMessages.push({ sender: 'bot', text: `Analysis:\n${data.recommendation.analysis}` });
+      }
+      setMessages(reconstructedMessages);
+      
+      // Clear state so reload doesn't trigger it again
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleDemographicsSubmit = (e) => {
     e.preventDefault();
@@ -447,15 +472,15 @@ const GptChatPage = () => {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder={chatPhase === 'done' ? "Consultation completed. You can safely exit." : "Type your disease in detail..."}
-                    disabled={isTyping || chatPhase === 'done'}
+                    placeholder={(chatPhase === 'done' && isBeginner) ? "Consultation completed. You can safely exit." : "Type your disease in detail..."}
+                    disabled={isTyping || (chatPhase === 'done' && isBeginner)}
                     style={{ flex: '1 1 0%', backgroundColor: 'transparent', border: 'none', padding: '0.75rem', outline: 'none', fontSize: '0.9375rem', color: 'var(--color-gemini-text)' }}
                   />
                   
 
                   <button 
                     onClick={handleSendMessage}
-                    disabled={!inputValue.trim() || isTyping || chatPhase === 'done'}
+                    disabled={!inputValue.trim() || isTyping || (chatPhase === 'done' && isBeginner)}
                     style={{ 
                       width: '3rem', 
                       height: '3rem', 
@@ -466,8 +491,8 @@ const GptChatPage = () => {
                       justifyContent: 'center', 
                       color: 'white', 
                       transition: 'all 0.3s', 
-                      opacity: (!inputValue.trim() || isTyping || chatPhase === 'done') ? 0.4 : 1, 
-                      cursor: (!inputValue.trim() || isTyping || chatPhase === 'done') ? 'not-allowed' : 'pointer', 
+                      opacity: (!inputValue.trim() || isTyping || (chatPhase === 'done' && isBeginner)) ? 0.4 : 1, 
+                      cursor: (!inputValue.trim() || isTyping || (chatPhase === 'done' && isBeginner)) ? 'not-allowed' : 'pointer', 
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', 
                       flexShrink: 0,
                       border: 'none',
